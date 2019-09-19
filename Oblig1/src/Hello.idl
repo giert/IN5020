@@ -2,6 +2,12 @@ module HelloApp
 {
   interface Hello
   {
-    string sayHello(in string message);
+    string getTimesPlayed(in string message);
+    string getTimesPlayedByUser(in string message);
+  };
+  interface Test
+  {
+    string getTimesPlayed(in string message);
+    string getTimesPlayedByUser(in string message);
   };
 };

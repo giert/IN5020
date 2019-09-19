@@ -1,21 +1,22 @@
 package server;
 
-import java.text.SimpleDateFormat;
-import java.util.Calendar;
-
 import HelloApp.HelloPOA;
 
 public class HelloServant extends HelloPOA {
 
 	@Override
-	public String sayHello(String message) {
-		Calendar cal = Calendar.getInstance();
-        SimpleDateFormat sdf = new SimpleDateFormat("HH:mm:ss");
-        String now = sdf.format(cal.getTime());
-
-        System.out.println("Message from client: " + message);
-        return "Hello from Server at " + now;
-
+	public String getTimesPlayedByUser(String message) {
+		String[] messages = message.split(" ");
+		String songID = messages[0];
+		String userID = messages[1];
+        
+		System.out.println("Message from client: " + userID + songID);
+        return "Hello from Server " + message;
 	}
 	
+	@Override
+	public String getTimesPlayed(String message) {
+		// TODO Auto-generated method stub
+		return null;
+	}
 }

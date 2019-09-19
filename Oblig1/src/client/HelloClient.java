@@ -1,8 +1,5 @@
 package client;
 
-import java.text.SimpleDateFormat;
-import java.util.Calendar;
-
 import org.omg.CORBA.ORB;
 import org.omg.CosNaming.NamingContextExt;
 import org.omg.CosNaming.NamingContextExtHelper;
@@ -31,11 +28,10 @@ public class HelloClient {
 			String name = "Hello";
 			helloImpl = HelloHelper.narrow(ncRef.resolve_str(name));
 			
-			Calendar cal = Calendar.getInstance();
-        	SimpleDateFormat sdf = new SimpleDateFormat("HH:mm:ss");
-        	String now = sdf.format(cal.getTime());
+			String userID = "55874081c91a71d9f7a13cd9e9f1538e23874370";
+			String songID = "SOPSOHT12A67AE0235";
 
-			String message = helloImpl.sayHello("Hello from Client at " + now);
+			String message = helloImpl.getTimesPlayedByUser(userID + " " + songID);
 			
 			System.out.println("Message from Server: " + message);
 
