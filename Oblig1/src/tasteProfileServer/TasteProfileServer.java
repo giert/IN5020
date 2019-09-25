@@ -1,5 +1,6 @@
 package tasteProfileServer;
 
+import java.util.HashMap;
 import org.omg.CORBA.ORB;
 import org.omg.CosNaming.NameComponent;
 import org.omg.CosNaming.NamingContextExt;
@@ -56,4 +57,18 @@ public class TasteProfileServer {
 
 		System.out.println("TasteProfileServer Exiting ...");	}
 
+	private void startupCache(HashMap<String,Song> songMap){
+		int databaseNum = 0;
+		ArrayList<String>() databases = new ArrayList<String>();
+		
+	}
 }
+
+class Song{
+	String id;
+	long plays;
+	public Song(String idstr){
+		id = idstr;
+	}
+}
+
