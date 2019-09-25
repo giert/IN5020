@@ -1,5 +1,18 @@
 package tasteProfileClient;
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.io.PrintWriter;
+import java.io.UnsupportedEncodingException;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.util.stream.Stream;
+
 import org.omg.CORBA.ORB;
 import org.omg.CosNaming.NamingContextExt;
 import org.omg.CosNaming.NamingContextExtHelper;
@@ -10,45 +23,99 @@ import TasteProfile.ProfilerHelper;
 public class TasteProfileClient {
 
 	static Profiler servant;
+	static PrintWriter writer;
+	static String inputFile = "input.txt";
+	static String outputFile = "output.txt";
+	
 	/**
 	 * @param args
 	 */
 	public static void main(String[] args) {
+		setup(args);
+		process();
+		cleanup();
+	}
+	
+	private static void setup(String[] args) {
 		establishConnection(args);
-		processInput();
+		openFile(outputFile);
 	}
 	
 	private static void establishConnection(String[] args) {
 		try{
-			// create and initialize the ORB
 			ORB orb = ORB.init(args, null);
 	
-			// get the root naming context
 			org.omg.CORBA.Object objRef = orb.resolve_initial_references("NameService");
-			// Use NamingContextExt instead of NamingContext. This is 
-			// part of the Interoperable naming Service.  
 			NamingContextExt ncRef = NamingContextExtHelper.narrow(objRef);
 	
-			// resolve the Object Reference in Naming
 			String name = "Profiler";
 			servant = ProfilerHelper.narrow(ncRef.resolve_str(name));
-			
 		} catch (Exception e) {
 			System.out.println("ERROR : " + e) ;
 			e.printStackTrace(System.out);
 		}	
 	}
 	
-	private static void processInput() {
-		//String response;
-		
-		String user_id = "55874081c91a71d9f7a13cd9e9f1538e23874370";
-		String song_id = "SOPSOHT12A67AE0235";
-
-		System.out.println(servant.getTimesPlayed(song_id));
-		System.out.println(servant.getTimesPlayedByUser(user_id, song_id));
-		System.out.println(servant.getTopThreeUsersBySong(song_id));
-		System.out.println(servant.getTopThreeSongsByUser(user_id));
+	private static void openFile(String filename) {
+		try {
+			writer = new PrintWriter(outputFile, "UTF-8");
+		} catch (FileNotFoundException | UnsupportedEncodingException e) {
+			System.out.println("ERROR : " + e) ;
+			e.printStackTrace(System.out);
+		}
 	}
-
+	
+	private static void process() {
+		try (Stream<String> stream = Files.lines(Paths.get(inputFile))) {
+			stream.forEach((line) ->
+	        {
+	        	remoteCall(line.split("\\s"));
+	        });
+		} catch (IOException e) {
+			System.out.println("ERROR : " + e) ;
+			e.printStackTrace(System.out);
+		}
+	}
+	
+	private static void remoteCall(String[] params) {
+		long start, finish;
+		switch (params[0])
+		{
+		case "getTimesPlayed":
+			start = System.nanoTime();
+			int response1 = servant.getTimesPlayed(params[1]);
+			finish = System.nanoTime();
+			printOutput(String.format("Song %s played %d times. (%d ms)", params[1], response1, finish - start));
+			break;
+		case "getTimesPlayedByUser":
+			start = System.nanoTime();
+			int response2 = servant.getTimesPlayedByUser(params[1], params[2]);
+			finish = System.nanoTime();
+			printOutput(String.format("Song %s played %d times by user %s. (%d ms)", params[1], response2, params[2], finish - start));
+			break;
+		case "getTopThreeUsersBySong":
+			start = System.nanoTime();
+			String response3 = servant.getTopThreeUsersBySong(params[1]);
+			finish = System.nanoTime();
+			printOutput(String.format("Song %s played most by users %s. (%d ms)", params[1], response3, finish - start));
+			break;
+		case "getTopThreeSongsByUser":
+			start = System.nanoTime();
+			String response4 = servant.getTopThreeSongsByUser(params[1]);
+			finish = System.nanoTime();
+			printOutput(String.format("User %s has songs %s as top songs. (%d ms)", params[1], response4, finish - start));
+			break;
+		default: 
+            System.out.println("no match");
+		}
+	}
+	
+	private static void printOutput(String output) {
+		System.out.println(output);
+		writer.println(output);
+	}
+	
+	private static void cleanup() {
+		writer.close();
+	}
 }
