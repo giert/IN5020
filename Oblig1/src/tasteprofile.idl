@@ -1,0 +1,13 @@
+/* This module defines the server interface for the Musical Taste Profile Service. */
+module TasteProfile
+{
+	/* The service interface with the methods that can be invoked remotely by clients */
+  	interface Profiler
+  	{
+    	/* Returns how many times a given song was played by all the users*/
+		long getTimesPlayed(in string song_id);
+
+    	/* Returns how many times a given song was played by a given user*/
+    	long getTimesPlayedByUser(in string user_id, in string song_id);
+  	};
+};
