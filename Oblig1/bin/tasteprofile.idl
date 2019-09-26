@@ -25,6 +25,12 @@ module TasteProfile
 		public sequence<SongCounter> topThreeSongs;
 	};
 	
+	valuetype UserProfile {
+		public string user_id;
+		public long total_play_count;
+		public sequence<SongCounter> songs;
+		public TopThreeSongs top_three_songs;
+	};
 	
 	valuetype SongProfile
 	{

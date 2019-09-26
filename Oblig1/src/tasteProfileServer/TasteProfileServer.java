@@ -14,9 +14,7 @@ import org.omg.CosNaming.NamingContextExtHelper;
 import org.omg.PortableServer.POA;
 import org.omg.PortableServer.POAHelper;
 
-import TasteProfile.Profiler;
-import TasteProfile.ProfilerHelper;
-import TasteProfile.SongCounter;
+import TasteProfile.*;
 
 public class TasteProfileServer {
 
@@ -56,8 +54,14 @@ public class TasteProfileServer {
 			ncRef.rebind(path, href);
 
 			System.out.println("TasteProfileServer ready and waiting ...");
-			HashMap<String,Song> songmap = new HashMap<String,Song>();
-			startupCache(songmap);
+			
+			
+			HashMap<String,Song> songProfiles = new HashMap<String,Song>();
+			HashMap<String,Integer> userPopularity = new HashMap<String, Integer>();
+			HashMap<String, User> userProfiles = new HashMap<String, User>();
+			
+			
+			startupCache(songProfiles, userPopularity, userProfiles);
 			// wait for invocations from clients
 			orb.run();
 		} 
@@ -69,7 +73,11 @@ public class TasteProfileServer {
 
 		System.out.println("TasteProfileServer Exiting ...");	}
 
-	private static void startupCache(HashMap<String,Song> songMap){
+	private static void startupCache(
+			HashMap<String,Song> songProfiles, 
+			HashMap<String,Integer> userPopularity,
+			HashMap<String, User> userProfiles)
+		{
 		int databaseNum = 0;
 		ArrayList<String> databases = new ArrayList<String>();
 		databases.add("train_triplets_1.txt");
@@ -82,47 +90,45 @@ public class TasteProfileServer {
 			
 			System.out.println(fileName);
 			
-			try {
-	            // FileReader reads text files in the default encoding.
-				System.out.println("1");
-	            FileReader fileReader = new FileReader(fileName);
-
-	            System.out.println("2");
-	            // Always wrap FileReader in BufferedReader.
-	            BufferedReader bufferedReader = new BufferedReader(fileReader);
-
-	            while((line = bufferedReader.readLine()) != null) {
-	                System.out.println(line);
-	            }   
-
-	            // Always close files.
-	            bufferedReader.close();         
-	        }
-	        catch(FileNotFoundException ex) {
-	            System.out.println(
-	                "Unable to open file '" + 
-	                fileName + "'");                
-	        }
-	        catch(IOException ex) {
-	            System.out.println(
-	                "Error reading file '" 
-	                + fileName + "'");                  
-	            // Or we could just do this: 
-	            // ex.printStackTrace();
-	        }
+			try (Stream<String> stream = Files.lines(Paths.get(fileName))) {
+				stream.forEach((rline) ->
+		        {
+		        	lineCall(rline.split("	"),songProfiles, userPopularity, userProfiles);
+		        });
+			} catch (IOException e) {
+				System.out.println("ERROR : " + e) ;
+				e.printStackTrace(System.out);
+			}
 			
 			
 			databaseNum ++;
 		}
+		System.out.println("chache complete");
 		
+	}
+	
+	private static void lineCall(String[] params,
+			HashMap<String,Song> songProfiles, 
+			HashMap<String,Integer> userPopularity,
+			HashMap<String, User> userProfiles) {
+		if(! songProfiles.containsKey(params[0])){
+			songProfiles.put(params[0], new Song());
+		}
+		//System.out.println(params[0] + " " + params[2]);
+		songProfiles.get(params[0]).total_play_count += Integer.parseInt(params[2]);
 	}
 }
 
-class Song{
-	String id;
-	public Song(String id){
-		this.id = id;
-		
+class Song extends SongProfile{
+	int total_play_count;
+	public Song(){
+		this.total_play_count = 0;
 	}
 }
 
+class User extends UserProfile{
+	public User(String id){
+		this.total_play_count = 0;
+		this.user_id = id;
+	}
+}
