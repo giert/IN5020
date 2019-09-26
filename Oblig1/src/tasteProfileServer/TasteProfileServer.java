@@ -113,9 +113,16 @@ public class TasteProfileServer {
 			HashMap<String, User> userProfiles) {
 		if(! songProfiles.containsKey(params[0])){
 			songProfiles.put(params[0], new Song());
+			
+		}
+		if(! userPopularity.containsKey(params[1])){
+			userPopularity.put(params[1], 0);
 		}
 		//System.out.println(params[0] + " " + params[2]);
 		songProfiles.get(params[0]).total_play_count += Integer.parseInt(params[2]);
+		//System.out.print(userPopularity.get(params[1]));
+		userPopularity.put(params[1],userPopularity.get(params[1]) + Integer.parseInt(params[2]));
+		//System.out.println("->" + userPopularity.get(params[1]));
 	}
 }
 
