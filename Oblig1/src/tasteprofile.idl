@@ -2,6 +2,9 @@
 module TasteProfile
 {
 
+	
+	
+	
 	valuetype UserCounter
 	{
 		public string user_id;
@@ -21,6 +24,20 @@ module TasteProfile
 	{
 		public sequence<SongCounter> topThreeSongs;
 	};
+	
+	valuetype UserProfile {
+		public string user_id;
+		public long total_play_count;
+		public sequence<SongCounter> songs;
+		public TopThreeSongs top_three_songs;
+	};
+	
+	valuetype SongProfile
+	{
+		public long total_play_count;
+		public TopThreeUsers top_three_users;
+	};
+	
 	
 	/* The service interface with the methods that can be invoked remotely by clients */
   	interface Profiler
