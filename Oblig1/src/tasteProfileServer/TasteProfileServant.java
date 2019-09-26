@@ -1,30 +1,33 @@
 package tasteProfileServer;
 
 import TasteProfile.ProfilerPOA;
+import TasteProfile.TopThreeSongs;
+import TasteProfile.TopThreeUsers;
 
 public class TasteProfileServant extends ProfilerPOA {
 
 	@Override
 	public int getTimesPlayed(String song_id) {
 		// TODO Auto-generated method stub
-		return 1001;
+		return 0;
 	}
 
 	@Override
 	public int getTimesPlayedByUser(String user_id, String song_id) {
 		// TODO Auto-generated method stub
-		return 1001;
+		return 0;
 	}
 
 	@Override
-	public String getTopThreeUsersBySong(String song_id) {
+	public TopThreeUsers getTopThreeUsersBySong(String song_id) {
 		// TODO Auto-generated method stub
-		return "tusen-og-en";
+		return null;
 	}
 
 	@Override
-	public String getTopThreeSongsByUser(String user_id) {
+	public TopThreeSongs getTopThreeSongsByUser(String user_id) {
 		// TODO Auto-generated method stub
-		return "tusen-og-en";
+		return null;
 	}
+	
 }

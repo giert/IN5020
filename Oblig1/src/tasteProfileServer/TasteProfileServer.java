@@ -1,5 +1,11 @@
 package tasteProfileServer;
 
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.util.HashMap;
+import java.util.stream.Stream;
+
 import org.omg.CORBA.ORB;
 import org.omg.CosNaming.NameComponent;
 import org.omg.CosNaming.NamingContextExt;
@@ -12,6 +18,9 @@ import TasteProfile.ProfilerHelper;
 
 public class TasteProfileServer {
 
+	static String[] databases = {"train_triplets_1.txt", "train_triplets_2.txt"};
+	static HashMap<String,Song> songmap = new HashMap<String,Song>();
+	
 	/**
 	 * @param args
 	 */
@@ -43,17 +52,50 @@ public class TasteProfileServer {
 			NameComponent path[] = ncRef.to_name( name );
 			ncRef.rebind(path, href);
 
+			startupCache();
+			
 			System.out.println("TasteProfileServer ready and waiting ...");
-
+			
 			// wait for invocations from clients
 			orb.run();
-		} 
-
-		catch (Exception e) {
+		} catch (Exception e) {
 			System.err.println("ERROR: " + e);
 			e.printStackTrace(System.out);
 		}
 
-		System.out.println("TasteProfileServer Exiting ...");	}
+		System.out.println("TasteProfileServer Exiting ...");
+	}
 
+
+	private static void startupCache(){
+		for (String database : databases) {
+			processDatabase(database);
+		}
+	}
+
+	private static void processDatabase(String database) {
+		try (Stream<String> stream = Files.lines(Paths.get(database))) {
+			stream.forEach((line) ->
+	        {
+	        	processLine(line);
+	        });
+		} catch (IOException e) {
+			System.out.println("ERROR : " + e) ;
+			e.printStackTrace(System.out);
+		}
+		
+	}
+	
+	private static void processLine(String line) {
+		System.out.println(line);
+		//Do shit
+	}
+
+	class Song{
+		String id;
+		long plays;
+		public Song(String id){
+				this.id = id;
+		}
+	}
 }

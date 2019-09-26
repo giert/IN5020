@@ -38,12 +38,11 @@ public class TasteProfileClient {
 	
 	private static void establishConnection(String[] args) {
 		try{
+			String name = "Profiler";
 			ORB orb = ORB.init(args, null);
 	
 			org.omg.CORBA.Object objRef = orb.resolve_initial_references("NameService");
 			NamingContextExt ncRef = NamingContextExtHelper.narrow(objRef);
-	
-			String name = "Profiler";
 			servant = ProfilerHelper.narrow(ncRef.resolve_str(name));
 		} catch (Exception e) {
 			System.out.println("ERROR : " + e) ;
@@ -90,7 +89,7 @@ public class TasteProfileClient {
 			break;
 		case "getTopThreeUsersBySong":
 			start = System.nanoTime();
-			String response3 = servant.getTopThreeUsersBySong(params[1]);
+			TopThreeUsers response3 = servant.getTopThreeUsersBySong(params[1]);
 			finish = System.nanoTime();
 			printOutput(String.format("Song %s played most by users %s. (%d ms)", params[1], response3, finish - start));
 			break;
