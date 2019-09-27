@@ -102,12 +102,47 @@ public class TasteProfileServer {
 			
 			databaseNum ++;
 		}
+		databaseNum = 0;
+		
+		//System.out.println("second pass");
+		
+		//while(databases.size() > databaseNum){
+		//	fileName = databases.get(databaseNum);
+		//	// build list of top songs by user	
+		//	try (Stream<String> stream = Files.lines(Paths.get(fileName))) {
+		//		stream.forEach((rline) ->
+		//        {
+		//        	userCall(rline.split("	"));
+		//        });
+		//	} catch (IOException e) {
+		//		System.out.println("ERROR : " + e) ;
+		//		e.printStackTrace(System.out);
+		//	}	
+		//databaseNum ++;
+		//}
 		
 		//sort most popular users 
 		sortUsers();
 		
 		System.out.println("chache complete");
 		
+	}
+	private static void userCall(String[] params){
+		if(userProfiles.containsKey(params[1])){
+			int value = Integer.parseInt(params[2]);
+			if(userProfiles.get(params[1]).top_three_songs.topThreeSongs[0].songid_play_time < value){
+				userProfiles.get(params[1]).top_three_songs.topThreeSongs[0].songid_play_time = value;
+				return;
+			}
+			else if(userProfiles.get(params[1]).top_three_songs.topThreeSongs[1].songid_play_time < value){
+				userProfiles.get(params[1]).top_three_songs.topThreeSongs[1].songid_play_time = value;
+				return;
+			}
+			else if(userProfiles.get(params[1]).top_three_songs.topThreeSongs[2].songid_play_time < value){
+				userProfiles.get(params[1]).top_three_songs.topThreeSongs[2].songid_play_time = value;
+				return;
+			}
+		}		
 	}
 	
 	private static void sortUsers(){
