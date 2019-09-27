@@ -1,10 +1,6 @@
 /* This module defines the server interface for the Musical Taste Profile Service. */
 module TasteProfile
 {
-
-	
-	
-	
 	valuetype UserCounter
 	{
 		public string user_id;
@@ -37,8 +33,7 @@ module TasteProfile
 		public long total_play_count;
 		public TopThreeUsers top_three_users;
 	};
-	
-	
+
 	/* The service interface with the methods that can be invoked remotely by clients */
   	interface Profiler
   	{
@@ -54,6 +49,4 @@ module TasteProfile
     	/* Returns the top three songs played by a given user*/
     	TopThreeSongs getTopThreeSongsByUser(in string user_id);
   	};
-  	
-
-};
+ };

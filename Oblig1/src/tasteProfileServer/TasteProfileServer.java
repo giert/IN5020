@@ -1,6 +1,8 @@
 package tasteProfileServer;
 
 import java.io.*;
+import java.util.Arrays;
+import java.util.Collections;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.ArrayList;
@@ -20,7 +22,13 @@ public class TasteProfileServer {
 
 	/**
 	 * @param args
+	 * 
 	 */
+
+	public static HashMap<String,SongProfile> songProfiles = new HashMap<String,SongProfile>();
+	public static HashMap<String,Integer> userPopularity = new HashMap<String, Integer>();
+	public static HashMap<String, UserProfile> userProfiles = new HashMap<String, UserProfile>();
+	
 	public static void main(String[] args) {
 		System.out.println("start");
 		try{
@@ -52,17 +60,11 @@ public class TasteProfileServer {
 			String name = "Profiler";
 			NameComponent path[] = ncRef.to_name( name );
 			ncRef.rebind(path, href);
+			
+			startupCache();
 
-			System.out.println("TasteProfileServer ready and waiting ...");
-			
-			
-			HashMap<String,Song> songProfiles = new HashMap<String,Song>();
-			HashMap<String,Integer> userPopularity = new HashMap<String, Integer>();
-			HashMap<String, User> userProfiles = new HashMap<String, User>();
-			
-			
-			startupCache(songProfiles, userPopularity, userProfiles);
 			// wait for invocations from clients
+			System.out.println("TasteProfileServer ready and waiting ...");
 			orb.run();
 		} 
 
@@ -73,10 +75,7 @@ public class TasteProfileServer {
 
 		System.out.println("TasteProfileServer Exiting ...");	}
 
-	private static void startupCache(
-			HashMap<String,Song> songProfiles, 
-			HashMap<String,Integer> userPopularity,
-			HashMap<String, User> userProfiles)
+	private static void startupCache()
 		{
 		int databaseNum = 0;
 		ArrayList<String> databases = new ArrayList<String>();
@@ -93,7 +92,7 @@ public class TasteProfileServer {
 			try (Stream<String> stream = Files.lines(Paths.get(fileName))) {
 				stream.forEach((rline) ->
 		        {
-		        	lineCall(rline.split("	"),songProfiles, userPopularity, userProfiles);
+		        	lineCall(rline.split("	"));
 		        });
 			} catch (IOException e) {
 				System.out.println("ERROR : " + e) ;
@@ -103,39 +102,77 @@ public class TasteProfileServer {
 			
 			databaseNum ++;
 		}
+		
+		//sort most popular users 
+		sortUsers();
+		
 		System.out.println("chache complete");
 		
 	}
 	
-	private static void lineCall(String[] params,
-			HashMap<String,Song> songProfiles, 
-			HashMap<String,Integer> userPopularity,
-			HashMap<String, User> userProfiles) {
-		if(! songProfiles.containsKey(params[0])){
-			songProfiles.put(params[0], new Song());
-			
+	private static void sortUsers(){
+		System.out.println("user sort");
+		Integer[] values = userPopularity.values().toArray(new Integer[0]);
+		Integer[] importantValues = new Integer[1000];
+		Arrays.sort(values, Collections.reverseOrder());
+		System.arraycopy(values, 0, importantValues, 0, 1000);
+		
+		Integer least = importantValues[999];
+		int leastcount = 0;
+		while(importantValues[999-leastcount] == least){
+			leastcount++;
 		}
+		System.out.println("least " + least + " greatest " + importantValues[0]);
+		
+		for (HashMap.Entry<String, Integer> entry : userPopularity.entrySet()) {
+			
+			if(entry.getValue() == least && leastcount > 0){
+				userProfiles.put(entry.getKey(), new UserProfile(){});
+				userProfiles.get(entry.getKey()).user_id = entry.getKey();
+				userProfiles.get(entry.getKey()).total_play_count = entry.getValue();
+
+				leastcount = leastcount - 1;
+				System.out.println("Item : " + entry.getKey() + " Count : " + entry.getValue());
+
+			}
+			else if(entry.getValue() > least){
+				userProfiles.put(entry.getKey(), new UserProfile(){});
+				userProfiles.get(entry.getKey()).user_id = entry.getKey();
+				userProfiles.get(entry.getKey()).total_play_count = entry.getValue();
+				System.out.println("Item : " + entry.getKey() + " Count : " + entry.getValue());
+
+
+			}
+		}
+	
+		
+	}
+	
+	private static void lineCall(String[] params) {
+		if (songProfiles.putIfAbsent(params[0], new SongProfileImpl() {}) == null) {
+			songProfiles.get(params[0]).top_three_users = new TopThreeUsersImpl() {};
+			songProfiles.get(params[0]).top_three_users.topThreeUsers = new UserCounterImpl[3];
+		}
+		
 		if(! userPopularity.containsKey(params[1])){
 			userPopularity.put(params[1], 0);
 		}
+		
 		//System.out.println(params[0] + " " + params[2]);
 		songProfiles.get(params[0]).total_play_count += Integer.parseInt(params[2]);
 		//System.out.print(userPopularity.get(params[1]));
 		userPopularity.put(params[1],userPopularity.get(params[1]) + Integer.parseInt(params[2]));
 		//System.out.println("->" + userPopularity.get(params[1]));
-	}
-}
+		
 
-class Song extends SongProfile{
-	int total_play_count;
-	public Song(){
-		this.total_play_count = 0;
-	}
-}
-
-class User extends UserProfile{
-	public User(String id){
-		this.total_play_count = 0;
-		this.user_id = id;
+		for (int i = 0; i<3; i++) {
+			if(songProfiles.get(params[0]).top_three_users.topThreeUsers[i] == null) {
+				songProfiles.get(params[0]).top_three_users.topThreeUsers[i] = new UserCounterImpl() {};
+			}
+			if(songProfiles.get(params[0]).top_three_users.topThreeUsers[i].songid_play_time < Integer.parseInt(params[2])) {
+				songProfiles.get(params[0]).top_three_users.topThreeUsers[i].user_id = params[1];
+				songProfiles.get(params[0]).top_three_users.topThreeUsers[i].songid_play_time = Integer.parseInt(params[2]);
+			}
+		}
 	}
 }

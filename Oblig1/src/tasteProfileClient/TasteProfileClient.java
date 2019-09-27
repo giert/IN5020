@@ -14,6 +14,9 @@ import org.omg.CosNaming.NamingContextExtHelper;
 
 import TasteProfile.Profiler;
 import TasteProfile.ProfilerHelper;
+import TasteProfile.SongProfile;
+import TasteProfile.TopThreeSongs;
+import TasteProfile.TopThreeUsers;
 
 public class TasteProfileClient {
 
@@ -90,13 +93,13 @@ public class TasteProfileClient {
 			break;
 		case "getTopThreeUsersBySong":
 			start = System.nanoTime();
-			String response3 = servant.getTopThreeUsersBySong(params[1]);
+			TopThreeUsers response3 = servant.getTopThreeUsersBySong(params[1]);
 			finish = System.nanoTime();
-			printOutput(String.format("Song %s played most by users %s. (%d ms)", params[1], response3, finish - start));
+			printOutput(String.format("Song %s played most by users %s, %s and %s. (%d ms)", params[1], response3.topThreeUsers[0].user_id, response3.topThreeUsers[1].user_id, response3.topThreeUsers[2].user_id, finish - start));
 			break;
 		case "getTopThreeSongsByUser":
 			start = System.nanoTime();
-			String response4 = servant.getTopThreeSongsByUser(params[1]);
+			TopThreeSongs response4 = servant.getTopThreeSongsByUser(params[1]);
 			finish = System.nanoTime();
 			printOutput(String.format("User %s has songs %s as top songs. (%d ms)", params[1], response4, finish - start));
 			break;
