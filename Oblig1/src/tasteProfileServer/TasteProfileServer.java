@@ -61,7 +61,7 @@ public class TasteProfileServer {
 			NameComponent path[] = ncRef.to_name( name );
 			ncRef.rebind(path, href);
 			
-			startupCache();
+			//startupCache(); DISABLED STARTUP CACHE
 
 			// wait for invocations from clients
 			System.out.println("TasteProfileServer ready and waiting ...");

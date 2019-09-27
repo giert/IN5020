@@ -40,6 +40,9 @@ public class TasteProfileServant extends ProfilerPOA {
 		if(!users.containsKey(user_id)) {
 			cacheUser(user_id);
 		}
+		if(users.get(user_id).songs == null) {
+			cacheUser(user_id);
+		}
 		for (SongCounter song : users.get(user_id).songs) {
 			if(song.song_id.equals(song_id)) {
 				return song.songid_play_time;
@@ -104,7 +107,6 @@ public class TasteProfileServant extends ProfilerPOA {
 			if(songs.get(splitline[0]).top_three_users.topThreeUsers[i].songid_play_time < Integer.parseInt(splitline[2])) {
 				songs.get(splitline[0]).top_three_users.topThreeUsers[i].user_id = splitline[1];
 				songs.get(splitline[0]).top_three_users.topThreeUsers[i].songid_play_time = Integer.parseInt(splitline[2]);
-				break;
 			}
 		}
 		
@@ -123,7 +125,6 @@ public class TasteProfileServant extends ProfilerPOA {
 			if(users.get(splitline[1]).top_three_songs.topThreeSongs[i].songid_play_time < Integer.parseInt(splitline[2])) {
 				users.get(splitline[1]).top_three_songs.topThreeSongs[i].song_id = splitline[1];
 				users.get(splitline[1]).top_three_songs.topThreeSongs[i].songid_play_time = Integer.parseInt(splitline[2]);
-				break;
 			}
 		}
 		
