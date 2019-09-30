@@ -62,7 +62,6 @@ public class TasteProfileServer {
 			ncRef.rebind(path, href);
 			
 			startupCache();
-
 			// wait for invocations from clients
 			System.out.println("TasteProfileServer ready and waiting ...");
 			orb.run();
@@ -97,44 +96,70 @@ public class TasteProfileServer {
 		        {
 		        	lineCall(rline.split("	"));
 		        });
+				stream.close();
+
 			} catch (IOException e) {
 				System.out.println("ERROR : " + e) ;
 				e.printStackTrace(System.out);
 			}
-			
 			
 			databaseNum ++;
 		}
 		System.out.println("time is " + (java.lang.System.currentTimeMillis() - timeboi));
 		databaseNum = 0;
 		
-		//System.out.println("second pass");
-		
-		//while(databases.size() > databaseNum){
-		//	fileName = databases.get(databaseNum);
-		//	// build list of top songs by user	
-		//	try (Stream<String> stream = Files.lines(Paths.get(fileName))) {
-		//		stream.forEach((rline) ->
-		//        {
-		//        	userCall(rline.split("	"));
-		//        });
-		//	} catch (IOException e) {
-		//		System.out.println("ERROR : " + e) ;
-		//		e.printStackTrace(System.out);
-		//	}	
-		//databaseNum ++;
-		//}
-		
 		//sort most popular users 		
-		sortUsers();
+		sortUsers();		
+		
+		System.out.println("second pass");
+		
+		while(databases.size() > databaseNum){
+			fileName = databases.get(databaseNum);
+			// build list of top songs by user	
+			try (Stream<String> stream = Files.lines(Paths.get(fileName))) {
+				stream.forEach((rline) ->
+		        {
+		        	userCall(rline.split("	"));
+		        	//songProfiles.get(rline.split("\\s+")[0]);
+		        });
+			} catch (IOException e) {
+				System.out.println("ERROR : " + e) ;
+				e.printStackTrace(System.out);
+			}	
+		databaseNum ++;
+		}
+		
+
 		
 		System.out.println("chache complete");
 		
 	}
 	private static void userCall(String[] params){
 		if(userProfiles.containsKey(params[1])){
+			//System.out.println(params[1]);
+			
 			int value = Integer.parseInt(params[2]);
-			if(userProfiles.get(params[1]).top_three_songs.topThreeSongs[0].songid_play_time < value){
+			UserProfile user = userProfiles.get(params[1]);
+			
+			String tempsong = params[1];
+			String mainsong = params[1];
+			
+			int tempvalue;
+			
+			for (int i = 0; i<3; i++) {
+				if(user.top_three_songs.topThreeSongs[i] == null){
+					user.top_three_songs.topThreeSongs[i] = new SongCounterImpl();
+				}
+				if(user.top_three_songs.topThreeSongs[i].songid_play_time < value){
+					tempvalue = user.top_three_songs.topThreeSongs[i].songid_play_time;
+					tempsong = user.top_three_songs.topThreeSongs[i].song_id;
+					user.top_three_songs.topThreeSongs[i].songid_play_time = value;
+					user.top_three_songs.topThreeSongs[i].song_id = mainsong;
+					value = tempvalue;
+					mainsong = tempsong;
+				}
+			}
+			/*if(userProfiles.get(params[1]).top_three_songs.topThreeSongs[0].songid_play_time < value){
 				userProfiles.get(params[1]).top_three_songs.topThreeSongs[0].songid_play_time = value;
 				return;
 			}
@@ -145,7 +170,7 @@ public class TasteProfileServer {
 			else if(userProfiles.get(params[1]).top_three_songs.topThreeSongs[2].songid_play_time < value){
 				userProfiles.get(params[1]).top_three_songs.topThreeSongs[2].songid_play_time = value;
 				return;
-			}
+			}*/
 		}		
 	}
 	
@@ -169,6 +194,8 @@ public class TasteProfileServer {
 				userProfiles.put(entry.getKey(), new UserProfile(){});
 				userProfiles.get(entry.getKey()).user_id = entry.getKey();
 				userProfiles.get(entry.getKey()).total_play_count = entry.getValue();
+				userProfiles.get(entry.getKey()).top_three_songs = new TopThreeSongsImpl();
+				userProfiles.get(entry.getKey()).top_three_songs.topThreeSongs = new SongCounterImpl[3];
 
 				leastcount = leastcount - 1;
 				//System.out.println("Item : " + entry.getKey() + " Count : " + entry.getValue());
@@ -178,6 +205,8 @@ public class TasteProfileServer {
 				userProfiles.put(entry.getKey(), new UserProfile(){});
 				userProfiles.get(entry.getKey()).user_id = entry.getKey();
 				userProfiles.get(entry.getKey()).total_play_count = entry.getValue();
+				userProfiles.get(entry.getKey()).top_three_songs = new TopThreeSongsImpl();
+				userProfiles.get(entry.getKey()).top_three_songs.topThreeSongs = new SongCounterImpl[3];
 				//System.out.println("Item : " + entry.getKey() + " Count : " + entry.getValue());
 
 
