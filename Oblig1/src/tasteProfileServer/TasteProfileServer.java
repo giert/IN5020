@@ -84,6 +84,9 @@ public class TasteProfileServer {
 		String fileName;
 		String line = null;
 		
+		
+		//first pass
+		long timeboi = java.lang.System.currentTimeMillis();
 		while(databases.size() > databaseNum){
 			fileName = databases.get(databaseNum);
 			
@@ -102,6 +105,7 @@ public class TasteProfileServer {
 			
 			databaseNum ++;
 		}
+		System.out.println("time is " + (java.lang.System.currentTimeMillis() - timeboi));
 		databaseNum = 0;
 		
 		//System.out.println("second pass");
@@ -121,7 +125,7 @@ public class TasteProfileServer {
 		//databaseNum ++;
 		//}
 		
-		//sort most popular users 
+		//sort most popular users 		
 		sortUsers();
 		
 		System.out.println("chache complete");
@@ -167,14 +171,14 @@ public class TasteProfileServer {
 				userProfiles.get(entry.getKey()).total_play_count = entry.getValue();
 
 				leastcount = leastcount - 1;
-				System.out.println("Item : " + entry.getKey() + " Count : " + entry.getValue());
+				//System.out.println("Item : " + entry.getKey() + " Count : " + entry.getValue());
 
 			}
 			else if(entry.getValue() > least){
 				userProfiles.put(entry.getKey(), new UserProfile(){});
 				userProfiles.get(entry.getKey()).user_id = entry.getKey();
 				userProfiles.get(entry.getKey()).total_play_count = entry.getValue();
-				System.out.println("Item : " + entry.getKey() + " Count : " + entry.getValue());
+				//System.out.println("Item : " + entry.getKey() + " Count : " + entry.getValue());
 
 
 			}
@@ -184,30 +188,48 @@ public class TasteProfileServer {
 	}
 	
 	private static void lineCall(String[] params) {
-		if (songProfiles.putIfAbsent(params[0], new SongProfileImpl() {}) == null) {
+		int plays = Integer.parseInt(params[2]);
+		/*if (songProfiles.putIfAbsent(params[0], new SongProfileImpl() {}) == null) {
 			songProfiles.get(params[0]).top_three_users = new TopThreeUsersImpl() {};
 			songProfiles.get(params[0]).top_three_users.topThreeUsers = new UserCounterImpl[3];
+		}*/
+		if (! songProfiles.containsKey(params[0])){
+			SongProfileImpl song = new SongProfileImpl();
+			song.top_three_users = new TopThreeUsersImpl() {};
+			song.top_three_users.topThreeUsers = new UserCounterImpl[3];
+			song.total_play_count = plays;
+			songProfiles.put(params[0], song);
+		}
+		else{
+			songProfiles.get(params[0]).total_play_count += plays;
 		}
 		
 		if(! userPopularity.containsKey(params[1])){
-			userPopularity.put(params[1], 0);
+			userPopularity.put(params[1], plays);
 		}
-		
-		//System.out.println(params[0] + " " + params[2]);
-		songProfiles.get(params[0]).total_play_count += Integer.parseInt(params[2]);
-		//System.out.print(userPopularity.get(params[1]));
-		userPopularity.put(params[1],userPopularity.get(params[1]) + Integer.parseInt(params[2]));
-		//System.out.println("->" + userPopularity.get(params[1]));
-		
-
+		else{
+			userPopularity.put(params[1],userPopularity.get(params[1]) + plays );
+		}
+		String mainuser = params[0];
+		String tempuser = params[0];
+		int tempplays;
+		SongProfile song = songProfiles.get(params[0]);
 		for (int i = 0; i<3; i++) {
-			if(songProfiles.get(params[0]).top_three_users.topThreeUsers[i] == null) {
-				songProfiles.get(params[0]).top_three_users.topThreeUsers[i] = new UserCounterImpl() {};
+			
+			if(song.top_three_users.topThreeUsers[i] == null) {
+				song.top_three_users.topThreeUsers[i] = new UserCounterImpl() {};
 			}
-			if(songProfiles.get(params[0]).top_three_users.topThreeUsers[i].songid_play_time < Integer.parseInt(params[2])) {
-				songProfiles.get(params[0]).top_three_users.topThreeUsers[i].user_id = params[1];
-				songProfiles.get(params[0]).top_three_users.topThreeUsers[i].songid_play_time = Integer.parseInt(params[2]);
+			if(song.top_three_users.topThreeUsers[i].songid_play_time < plays) {
+				tempplays = song.top_three_users.topThreeUsers[i].songid_play_time;
+				song.top_three_users.topThreeUsers[i].songid_play_time = plays;
+				plays = tempplays;
+				
+				tempuser = song.top_three_users.topThreeUsers[i].user_id;
+				song.top_three_users.topThreeUsers[i].user_id = mainuser;
+				mainuser = tempuser;
 			}
 		}
+		
+		
 	}
 }
