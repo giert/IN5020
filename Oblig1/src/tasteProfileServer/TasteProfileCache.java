@@ -130,18 +130,18 @@ public class TasteProfileCache {
     }
     
     public static void makeUser(String user_id){
-        userProfiles.put(user_id, new UserProfileImpl(){});
+        userProfiles.put(user_id, new UserProfileImpl());
         getUser(user_id).user_id = user_id;
         getUser(user_id).top_three_songs = new TopThreeSongsImpl();
         getUser(user_id).top_three_songs.topThreeSongs = new SongCounterImpl[3];
-		for (int i = 0; i<3; i++) setTopThreeSong(user_id, i, new SongCounterImpl() {});
+		for (int i = 0; i<3; i++) setTopThreeSong(user_id, i, new SongCounterImpl());
     }
     
     public static void makeSong(String song_id){
-        songProfiles.put(song_id, new SongProfileImpl() {});
-        getSong(song_id).top_three_users = new TopThreeUsersImpl() {};
+        songProfiles.put(song_id, new SongProfileImpl());
+        getSong(song_id).top_three_users = new TopThreeUsersImpl();
         getSong(song_id).top_three_users.topThreeUsers = new UserCounterImpl[3];
-		for (int i = 0; i<3; i++) setTopThreeUser(song_id, i, new UserCounterImpl() {});
+		for (int i = 0; i<3; i++) setTopThreeUser(song_id, i, new UserCounterImpl());
     }
 
     public static UserProfile getUser(String user_id){

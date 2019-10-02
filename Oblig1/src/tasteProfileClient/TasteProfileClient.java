@@ -14,7 +14,6 @@ import org.omg.CosNaming.NamingContextExtHelper;
 
 import TasteProfile.Profiler;
 import TasteProfile.ProfilerHelper;
-import TasteProfile.SongProfile;
 import TasteProfile.TopThreeSongs;
 import TasteProfile.TopThreeUsers;
 
@@ -101,7 +100,7 @@ public class TasteProfileClient {
 			start = System.currentTimeMillis();
 			TopThreeSongs response4 = servant.getTopThreeSongsByUser(params[1]);
 			finish = System.currentTimeMillis();
-			printOutput(String.format("User %s has songs %s as top songs. (%d ms)", params[1], response4, finish - start));
+			printOutput(String.format("User %s has songs %s, %s and %s as top songs. (%d ms)", params[1], response4.topThreeSongs[0].song_id, response4.topThreeSongs[1].song_id, response4.topThreeSongs[2].song_id, finish - start));
 			break;
 		default: 
             System.out.println("no match");
