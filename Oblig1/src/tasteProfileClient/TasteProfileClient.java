@@ -80,27 +80,27 @@ public class TasteProfileClient {
 		switch (params[0])
 		{
 		case "getTimesPlayed":
-			start = System.nanoTime();
+			start = System.currentTimeMillis();
 			int response1 = servant.getTimesPlayed(params[1]);
-			finish = System.nanoTime();
+			finish = System.currentTimeMillis();
 			printOutput(String.format("Song %s played %d times. (%d ms)", params[1], response1, finish - start));
 			break;
 		case "getTimesPlayedByUser":
-			start = System.nanoTime();
+			start = System.currentTimeMillis();
 			int response2 = servant.getTimesPlayedByUser(params[1], params[2]);
-			finish = System.nanoTime();
+			finish = System.currentTimeMillis();
 			printOutput(String.format("Song %s played %d times by user %s. (%d ms)", params[1], response2, params[2], finish - start));
 			break;
 		case "getTopThreeUsersBySong":
-			start = System.nanoTime();
+			start = System.currentTimeMillis();
 			TopThreeUsers response3 = servant.getTopThreeUsersBySong(params[1]);
-			finish = System.nanoTime();
+			finish = System.currentTimeMillis();
 			printOutput(String.format("Song %s played most by users %s, %s and %s. (%d ms)", params[1], response3.topThreeUsers[0].user_id, response3.topThreeUsers[1].user_id, response3.topThreeUsers[2].user_id, finish - start));
 			break;
 		case "getTopThreeSongsByUser":
-			start = System.nanoTime();
+			start = System.currentTimeMillis();
 			TopThreeSongs response4 = servant.getTopThreeSongsByUser(params[1]);
-			finish = System.nanoTime();
+			finish = System.currentTimeMillis();
 			printOutput(String.format("User %s has songs %s as top songs. (%d ms)", params[1], response4, finish - start));
 			break;
 		default: 
