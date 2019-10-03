@@ -14,13 +14,11 @@ import org.omg.CosNaming.NamingContextExtHelper;
 
 import TasteProfile.Profiler;
 import TasteProfile.ProfilerHelper;
-import TasteProfile.TopThreeSongs;
-import TasteProfile.TopThreeUsers;
 
 public class TasteProfileClient {
-
-	static Profiler servant;
-	static PrintWriter writer;
+	static TasteProfileClientHelper helper = new TasteProfileClientHelper();
+	public static Profiler servant;
+	public static PrintWriter writer;
 	static String inputFile = "input.txt";
 	static String outputFile = "output.txt";
 	
@@ -63,6 +61,7 @@ public class TasteProfileClient {
 	}
 	
 	private static void process() {
+		long start = System.currentTimeMillis();
 		try (Stream<String> stream = Files.lines(Paths.get(inputFile))) {
 			stream.forEach((line) ->
 	        {
@@ -72,44 +71,28 @@ public class TasteProfileClient {
 			System.out.println("ERROR : " + e) ;
 			e.printStackTrace(System.out);
 		}
+		long end = System.currentTimeMillis();
+		System.out.println("Processing input took " + (end-start)/60000 + " minutes");
 	}
 	
 	private static void remoteCall(String[] params) {
-		long start, finish;
 		switch (params[0])
 		{
 		case "getTimesPlayed":
-			start = System.currentTimeMillis();
-			int response1 = servant.getTimesPlayed(params[1]);
-			finish = System.currentTimeMillis();
-			printOutput(String.format("Song %s played %d times. (%d ms)", params[1], response1, finish - start));
+			helper.getTimesPlayed(params[1]);
 			break;
 		case "getTimesPlayedByUser":
-			start = System.currentTimeMillis();
-			int response2 = servant.getTimesPlayedByUser(params[1], params[2]);
-			finish = System.currentTimeMillis();
-			printOutput(String.format("Song %s played %d times by user %s. (%d ms)", params[1], response2, params[2], finish - start));
+			helper.getTimesPlayedByUser(params[1], params[2]);
 			break;
 		case "getTopThreeUsersBySong":
-			start = System.currentTimeMillis();
-			TopThreeUsers response3 = servant.getTopThreeUsersBySong(params[1]);
-			finish = System.currentTimeMillis();
-			printOutput(String.format("Song %s played most by users %s, %s and %s. (%d ms)", params[1], response3.topThreeUsers[0].user_id, response3.topThreeUsers[1].user_id, response3.topThreeUsers[2].user_id, finish - start));
+			helper.getTopThreeUsersBySong(params[1]);
 			break;
 		case "getTopThreeSongsByUser":
-			start = System.currentTimeMillis();
-			TopThreeSongs response4 = servant.getTopThreeSongsByUser(params[1]);
-			finish = System.currentTimeMillis();
-			printOutput(String.format("User %s has songs %s, %s and %s as top songs. (%d ms)", params[1], response4.topThreeSongs[0].song_id, response4.topThreeSongs[1].song_id, response4.topThreeSongs[2].song_id, finish - start));
+			helper.getTopThreeSongsByUser(params[1]);
 			break;
 		default: 
             System.out.println("no match");
 		}
-	}
-	
-	private static void printOutput(String output) {
-		System.out.println(output);
-		writer.println(output);
 	}
 	
 	private static void cleanup() {

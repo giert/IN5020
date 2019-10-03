@@ -17,9 +17,11 @@ import TasteProfile.TopThreeUsers;
 import TasteProfile.TopThreeUsersImpl;
 import TasteProfile.UserCounterImpl;
 import TasteProfile.UserProfile;
+import TasteProfile.UserProfileImpl;
 
 public class TasteProfileServant extends ProfilerPOA {
 	private static int result;
+	private static UserProfile userProfile;
 	private static TopThreeSongsImpl topSongs;
 	private static TopThreeUsersImpl topUsers;
 
@@ -82,6 +84,17 @@ public class TasteProfileServant extends ProfilerPOA {
 		}
 	}
 
+	@Override
+	public UserProfile getUserProfile(String user_id) {
+		delay();
+		if(userProfiles.containsKey(user_id)) {
+			return userProfiles.get(user_id);
+		}else{
+			getUserFromDB(user_id);
+			return userProfile;
+		}
+	}
+
 	private static void getSongFromDB(String song_id){
 		result = 0;
 		for (String database : databases) {
@@ -90,6 +103,24 @@ public class TasteProfileServant extends ProfilerPOA {
 				{
 					String[] splitline = line.split("\\s");
 					if(splitline[0].equals(song_id)) result += Integer.parseInt(splitline[2]);
+				});
+			} catch (IOException e) {
+				System.out.println("ERROR : " + e) ;
+				e.printStackTrace(System.out);
+			}
+		}
+	}
+
+	private static void getUserFromDB(String user_id){
+		userProfile = new UserProfileImpl() {};
+		for (String database : databases) {
+			try (Stream<String> stream = Files.lines(Paths.get(database))) {
+				stream.forEach((line) ->
+				{
+					String[] splitline = line.split("\\s");
+					if(splitline[1].equals(user_id)){
+						//HERE
+					};
 				});
 			} catch (IOException e) {
 				System.out.println("ERROR : " + e) ;
@@ -187,68 +218,4 @@ public class TasteProfileServant extends ProfilerPOA {
 			e.printStackTrace(System.out);
 		}
 	}
-/**
-	//private static void cacheUser(String user_id){
-	//	for (String database : databases) {
-	//		processDatabase(database, 1, user_id);
-	//	}
-	//}
-
-	private static void processDatabase(String database, int type, String target) {
-		try (Stream<String> stream = Files.lines(Paths.get(database))) {
-			stream.forEach((line) ->
-	        {
-	        	result = line.split("\\s");
-	        	if(result[type].equals(target)) return;
-	        });
-		} catch (IOException e) {
-			System.out.println("ERROR : " + e) ;
-			e.printStackTrace(System.out);
-		}
-	}
-	
-	private static void processLine(String[] splitline) {
-		if (songProfiles.putIfAbsent(splitline[0], new SongProfileImpl() {}) == null) {
-			songProfiles.get(splitline[0]).top_three_users = new TopThreeUsersImpl() {};
-			songProfiles.get(splitline[0]).top_three_users.topThreeUsers = new UserCounterImpl[3];
-		}
-		
-		songProfiles.get(splitline[0]).total_play_count += Integer.parseInt(splitline[2]);
-		
-		for (int i = 0; i<3; i++) {
-			if(songProfiles.get(splitline[0]).top_three_users.topThreeUsers[i] == null) {
-				songProfiles.get(splitline[0]).top_three_users.topThreeUsers[i] = new UserCounterImpl() {};
-			}
-			if(songProfiles.get(splitline[0]).top_three_users.topThreeUsers[i].songid_play_time < Integer.parseInt(splitline[2])) {
-				songProfiles.get(splitline[0]).top_three_users.topThreeUsers[i].user_id = splitline[1];
-				songProfiles.get(splitline[0]).top_three_users.topThreeUsers[i].songid_play_time = Integer.parseInt(splitline[2]);
-			}
-		}
-		
-		
-		if (userProfiles.putIfAbsent(splitline[1], new UserProfileImpl() {}) == null) {
-			userProfiles.get(splitline[1]).top_three_songs = new TopThreeSongsImpl() {};
-			userProfiles.get(splitline[1]).top_three_songs.topThreeSongs = new SongCounterImpl[3];
-		}
-		
-		userProfiles.get(splitline[1]).total_play_count += Integer.parseInt(splitline[2]);
-
-		for (int i = 0; i<3; i++) {
-			if(userProfiles.get(splitline[1]).top_three_songs.topThreeSongs[i] == null) {
-				userProfiles.get(splitline[1]).top_three_songs.topThreeSongs[i] = new SongCounterImpl() {};
-			}
-			if(userProfiles.get(splitline[1]).top_three_songs.topThreeSongs[i].songid_play_time < Integer.parseInt(splitline[2])) {
-				userProfiles.get(splitline[1]).top_three_songs.topThreeSongs[i].song_id = splitline[1];
-				userProfiles.get(splitline[1]).top_three_songs.topThreeSongs[i].songid_play_time = Integer.parseInt(splitline[2]);
-			}
-		}
-		
-		if (userProfiles.get(splitline[1]).songs == null) {
-			userProfiles.get(splitline[1]).songs = new SongCounterImpl[] {};
-		}
-		userProfiles.get(splitline[1]).songs = Arrays.copyOf(userProfiles.get(splitline[1]).songs, userProfiles.get(splitline[1]).songs.length + 1);
-		userProfiles.get(splitline[1]).songs[userProfiles.get(splitline[1]).songs.length - 1] = new SongCounterImpl() {};
-		userProfiles.get(splitline[1]).songs[userProfiles.get(splitline[1]).songs.length - 1].song_id = splitline[0];
-		userProfiles.get(splitline[1]).songs[userProfiles.get(splitline[1]).songs.length - 1].songid_play_time = Integer.parseInt(splitline[2]);
-	}*/
 }

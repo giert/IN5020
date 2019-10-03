@@ -48,7 +48,7 @@ public class TasteProfileServer {
 			long start = System.currentTimeMillis();
 			TasteProfileCache.startupCache();
 			long end = System.currentTimeMillis();
-			System.out.println("cache tok " + (end-start)/1000 + " sekunder");
+			System.out.println("Caching took " + (end-start)/1000 + " seconds");
 
 			// wait for invocations from clients
 			System.out.println("TasteProfileServer ready and waiting ...");
