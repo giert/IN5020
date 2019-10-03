@@ -101,9 +101,18 @@ public class TasteProfileCache {
 
 	private static void secondPassLine(String[] params){
 		if(userProfiles.containsKey(params[1])){
+            addSongCounter(params[0], params[1], Integer.parseInt(params[2]));
             shuffleTopSongs(0, params[0], params[1], Integer.parseInt(params[2]));
         }
-	}
+    }
+    
+    private static void addSongCounter(String song_id, String user_id, int plays){
+        int length = getUser(user_id).songs.length;
+        getUser(user_id).songs = Arrays.copyOf(getUser(user_id).songs, length + 1);
+        getUser(user_id).songs[length] = new SongCounterImpl(){};
+        getUser(user_id).songs[length].song_id = song_id;
+        getUser(user_id).songs[length].songid_play_time = plays;
+    }
 
     private static void shuffleTopUsers(int i, String song_id, String user_id, int plays){
     	if(i >= 3) {
@@ -121,7 +130,7 @@ public class TasteProfileCache {
     	if(i >= 3) {
     		return;
     	} else if(plays > getTopThreeSong(user_id, i).songid_play_time){
-            shuffleTopSongs(i+1, getTopThreeSong(user_id, i).song_id, user_id, plays);
+            shuffleTopSongs(i+1, getTopThreeSong(user_id, i).song_id, user_id, getTopThreeSong(user_id, i).songid_play_time);
             getTopThreeSong(user_id, i).song_id = song_id;
             getTopThreeSong(user_id, i).songid_play_time = plays;
         } else {
@@ -132,6 +141,7 @@ public class TasteProfileCache {
     public static void makeUser(String user_id){
         userProfiles.put(user_id, new UserProfileImpl());
         getUser(user_id).user_id = user_id;
+        getUser(user_id).songs = new SongCounterImpl[0];
         getUser(user_id).top_three_songs = new TopThreeSongsImpl();
         getUser(user_id).top_three_songs.topThreeSongs = new SongCounterImpl[3];
 		for (int i = 0; i<3; i++) setTopThreeSong(user_id, i, new SongCounterImpl());
