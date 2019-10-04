@@ -17,7 +17,7 @@ import TasteProfile.ProfilerHelper;
 
 public class TasteProfileClient {
 	static TasteProfileClientHelper helper = new TasteProfileClientHelper();
-	public static boolean userCaching;
+	public static boolean userCaching = true;
 	public static Profiler servant;
 	public static PrintWriter writer;
 	static String inputFile = "input.txt";

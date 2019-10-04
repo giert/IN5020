@@ -25,15 +25,9 @@ public class TasteProfileServant extends ProfilerPOA {
 	private static TopThreeSongsImpl topSongs;
 	private static TopThreeUsersImpl topUsers;
 
-	//
     public static String[] databases = {"train_triplets_1.txt", "train_triplets_2.txt"};
 	public static HashMap<String,SongProfile> songProfiles = new HashMap<String,SongProfile>();
 	public static HashMap<String, UserProfile> userProfiles = new HashMap<String, UserProfile>();
-	//
-	
-    //public static String[] databases;
-	//public static HashMap<String,SongProfile> songProfiles;
-	//public static HashMap<String, UserProfile> userProfiles;
 	
 	@Override
 	public int getTimesPlayed(String song_id) {
@@ -112,14 +106,23 @@ public class TasteProfileServant extends ProfilerPOA {
 	}
 
 	private static void getUserFromDB(String user_id){
-		userProfile = new UserProfileImpl() {};
+		userProfile = new UserProfileImpl();
+        userProfile.user_id = user_id;
+        userProfile.songs = new SongCounterImpl[0];
+        userProfile.top_three_songs = new TopThreeSongsImpl();
+        userProfile.top_three_songs.topThreeSongs = new SongCounterImpl[3];
+		for (int i = 0; i<3; i++) userProfile.top_three_songs.topThreeSongs[i] = new SongCounterImpl();
+		
 		for (String database : databases) {
 			try (Stream<String> stream = Files.lines(Paths.get(database))) {
 				stream.forEach((line) ->
 				{
 					String[] splitline = line.split("\\s");
 					if(splitline[1].equals(user_id)){
-						//HERE
+						int plays = Integer.parseInt(splitline[2]);
+						TasteProfileCache.addSongCounterUser(splitline[0], userProfile, plays);
+						getUserFromDBHelper(0, userProfile, splitline[0], plays );
+						userProfile.total_play_count += plays;
 					};
 				});
 			} catch (IOException e) {
@@ -127,6 +130,17 @@ public class TasteProfileServant extends ProfilerPOA {
 				e.printStackTrace(System.out);
 			}
 		}
+	}
+	private static void getUserFromDBHelper(int i, UserProfile user, String song_id, int plays){
+    	if(i >= 3) {
+    		return;
+    	} else if(plays > user.top_three_songs.topThreeSongs[i].songid_play_time){
+    		getUserFromDBHelper(i+1, user, user.top_three_songs.topThreeSongs[i].song_id, user.top_three_songs.topThreeSongs[i].songid_play_time);
+            user.top_three_songs.topThreeSongs[i].song_id = song_id;
+            user.top_three_songs.topThreeSongs[i].songid_play_time = plays;
+        } else {
+        	getUserFromDBHelper(i+1, user, song_id, plays);
+        }
 	}
 
 	private static void getUserPlaysFromDB(String song_id, String user_id){

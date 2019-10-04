@@ -111,6 +111,14 @@ public class TasteProfileCache {
         getUser(user_id).songs[length].song_id = song_id;
         getUser(user_id).songs[length].songid_play_time = plays;
     }
+    
+    public static void addSongCounterUser(String song_id, UserProfile user, int plays){
+        int length = user.songs.length;
+        user.songs = Arrays.copyOf(user.songs, length + 1);
+        user.songs[length] = new SongCounterImpl(){};
+        user.songs[length].song_id = song_id;
+        user.songs[length].songid_play_time = plays;
+    }
 
     private static void shuffleTopUsers(int i, String song_id, String user_id, int plays){
     	if(i >= 3) {
@@ -177,7 +185,6 @@ public class TasteProfileCache {
     }
     
     private static void putCache() {
-    	TasteProfileServant.databases = databases;
     	TasteProfileServant.songProfiles = songProfiles;
     	TasteProfileServant.userProfiles = userProfiles;
     }

@@ -53,7 +53,7 @@ public class TasteProfileClientHelper {
         printOutput(String.format("User %s has songs %s, %s and %s as top songs. (%d ms)", user_id, response.topThreeSongs[0].song_id, response.topThreeSongs[1].song_id, response.topThreeSongs[2].song_id, finish - start));
     }
 
-    public TopThreeSongs getTopThreeSongsByUserHelper(String user_id){
+    private TopThreeSongs getTopThreeSongsByUserHelper(String user_id){
         if(TasteProfileClient.userCaching){
             if(! user_id.equals(cachedProfile.user_id)){
                 cachedProfile = getUserProfile(user_id);
