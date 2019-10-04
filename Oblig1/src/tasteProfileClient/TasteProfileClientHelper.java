@@ -6,7 +6,9 @@ import TasteProfile.TopThreeUsers;
 import TasteProfile.UserProfile;
 import TasteProfile.UserProfileImpl;
 
+//the client helper contains useful functions to declutter the main class
 public class TasteProfileClientHelper {
+		//a single user is cached, in case multiple calls on the same user is done.
     UserProfile cachedProfile = new UserProfileImpl() {};
 
     public void getTimesPlayed(String song_id){
@@ -23,6 +25,7 @@ public class TasteProfileClientHelper {
         printOutput(String.format("Song %s played %d times by user %s. (%d ms)", song_id, response, user_id, finish - start));
     }
 
+		//getTimesPlayedByUser checks if the user is cached
     private int getTimesPlayedByUserHelper(String user_id, String song_id){
         if(TasteProfileClient.userCaching){
             if(! user_id.equals(cachedProfile.user_id)){
@@ -45,7 +48,7 @@ public class TasteProfileClientHelper {
         long finish = System.currentTimeMillis();
         printOutput(String.format("Song %s played most by users %s, %s and %s. (%d ms)", song_id, response.topThreeUsers[0].user_id, response.topThreeUsers[1].user_id, response.topThreeUsers[2].user_id, finish - start));
     }
-    
+
     public void getTopThreeSongsByUser(String user_id){
         long start = System.currentTimeMillis();
         TopThreeSongs response = getTopThreeSongsByUserHelper(user_id);
@@ -53,6 +56,8 @@ public class TasteProfileClientHelper {
         printOutput(String.format("User %s has songs %s, %s and %s as top songs. (%d ms)", user_id, response.topThreeSongs[0].song_id, response.topThreeSongs[1].song_id, response.topThreeSongs[2].song_id, finish - start));
     }
 
+
+		//getTopThreeSongsByUserHelper checks if user is cached
     private TopThreeSongs getTopThreeSongsByUserHelper(String user_id){
         if(TasteProfileClient.userCaching){
             if(! user_id.equals(cachedProfile.user_id)){

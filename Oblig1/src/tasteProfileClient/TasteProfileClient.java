@@ -22,7 +22,7 @@ public class TasteProfileClient {
 	public static PrintWriter writer;
 	static String inputFile = "input.txt";
 	static String outputFile = "output.txt";
-	
+
 	/**
 	 * @param args
 	 */
@@ -31,34 +31,37 @@ public class TasteProfileClient {
 		process();
 		cleanup();
 	}
-	
+
+	//startup
 	private static void setup(String[] args) {
 		establishConnection(args);
 		processArgs(args);
 		openFile(outputFile);
 	}
-	
+
+	//handles connecting to ORB
 	private static void establishConnection(String[] args) {
 		try{
 			ORB orb = ORB.init(args, null);
-	
+
 			org.omg.CORBA.Object objRef = orb.resolve_initial_references("NameService");
 			NamingContextExt ncRef = NamingContextExtHelper.narrow(objRef);
-	
+
 			String name = "Profiler";
 			servant = ProfilerHelper.narrow(ncRef.resolve_str(name));
 		} catch (Exception e) {
 			System.out.println("ERROR : " + e) ;
 			e.printStackTrace(System.out);
-		}	
+		}
 	}
 
+	//enable/disable cache
 	private static void processArgs(String[] args){
 		for(String arg : args){
 			if (arg.equals("-noMemory")) userCaching = false;
 		}
 	}
-	
+
 	private static void openFile(String filename) {
 		try {
 			writer = new PrintWriter(outputFile, "UTF-8");
@@ -67,7 +70,8 @@ public class TasteProfileClient {
 			e.printStackTrace(System.out);
 		}
 	}
-	
+
+	//main program. runs every command from the input file, and times each call
 	private static void process() {
 		long start = System.currentTimeMillis();
 		try (Stream<String> stream = Files.lines(Paths.get(inputFile))) {
@@ -82,7 +86,8 @@ public class TasteProfileClient {
 		long end = System.currentTimeMillis();
 		System.out.println("Processing input took " + (end-start)/60000 + " minutes");
 	}
-	
+
+	//decide what call to do
 	private static void remoteCall(String[] params) {
 		switch (params[0])
 		{
@@ -98,11 +103,11 @@ public class TasteProfileClient {
 		case "getTopThreeSongsByUser":
 			helper.getTopThreeSongsByUser(params[1]);
 			break;
-		default: 
+		default:
             System.out.println("no match");
 		}
 	}
-	
+
 	private static void cleanup() {
 		writer.close();
 	}

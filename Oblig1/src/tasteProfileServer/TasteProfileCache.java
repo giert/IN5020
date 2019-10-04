@@ -36,9 +36,11 @@ public class TasteProfileCache {
 		System.out.println("Cache complete!");
 		putCache();
     }
-
+	
+	//runs the first pass through the database
     private static void firstPass(){
         for(String database : databases){
+        	//reads every line of the file with file streamer
             try (Stream<String> stream = Files.lines(Paths.get(database))) {
                 stream.forEach((line) ->
                 {
@@ -56,23 +58,31 @@ public class TasteProfileCache {
         String song_id = params[0];
         int plays = Integer.parseInt(params[2]);
         
+        //check if the cache has the song, if not make a new song profile object and insert it
 		if (! songProfiles.containsKey(song_id)) makeSong(song_id);
         getSong(song_id).total_play_count += plays;
         
+        //insert a user into the popularity map, which is used to find the top 1000 users
         userPopularity.putIfAbsent(params[1], 0);
 		userPopularity.put(params[1], userPopularity.get(params[1]) + plays );
         
+		//check if the user in the current line is one of the top three users for the current song
         shuffleTopUsers(0, song_id, params[1], plays);
     }
 
+	//finds the top 1000 users
 	private static void sortUsers(){
+		//make an array of the popularity map and sort in reverse order
 		Integer[] values = userPopularity.values().toArray(new Integer[0]);
 		Arrays.sort(values, Collections.reverseOrder());
 		
+		//the smallest popularity is in the 1000th spot in the array
 		Integer least = values[999];
-		int leastcount = 0;
+		int leastcount = 0; //to keep track of how many shares the smallest value
 		while (values[999-leastcount] == least) leastcount++;
 		
+		//go through the entire user popularity map and find every user with a popularity larger than the smallest of the top 1000
+		//we have to limit the number of smallest popularity to keep the stored users to 1000 and not more
 		for (HashMap.Entry<String, Integer> entry : userPopularity.entrySet()) {
 			if (entry.getValue() >= least){
                 makeUser(entry.getKey());
@@ -82,6 +92,8 @@ public class TasteProfileCache {
 		}
     }
 
+	
+	//the second pass fills in the top three songs info for the top 1000 users
     private static void secondPass(){
         for(String database : databases){
             try (Stream<String> stream = Files.lines(Paths.get(database))) {
@@ -104,6 +116,7 @@ public class TasteProfileCache {
         }
     }
     
+	//adds current song to the array of songs a user has played.
     private static void addSongCounter(String song_id, String user_id, int plays){
         int length = getUser(user_id).songs.length;
         getUser(user_id).songs = Arrays.copyOf(getUser(user_id).songs, length + 1);
@@ -112,6 +125,7 @@ public class TasteProfileCache {
         getUser(user_id).songs[length].songid_play_time = plays;
     }
     
+    //same as addSongCounter but applied to object user
     public static void addSongCounterUser(String song_id, UserProfile user, int plays){
         int length = user.songs.length;
         user.songs = Arrays.copyOf(user.songs, length + 1);
@@ -120,6 +134,8 @@ public class TasteProfileCache {
         user.songs[length].songid_play_time = plays;
     }
 
+    //sorts the top users of a given song
+    //is implemented recursively for compactness
     private static void shuffleTopUsers(int i, String song_id, String user_id, int plays){
     	if(i >= 3) {
     		return;
@@ -132,6 +148,8 @@ public class TasteProfileCache {
         }
     }
 
+    //sorts the top songs of a given user
+    //is implemented recursively for compactness
     private static void shuffleTopSongs(int i, String song_id, String user_id, int plays){
     	if(i >= 3) {
     		return;
@@ -144,6 +162,8 @@ public class TasteProfileCache {
         }
     }
     
+    //creates a new instance of a userprofileimpl, and fills out the values,
+    //this could have been done in a constructor, but fits just as well here
     public static void makeUser(String user_id){
         userProfiles.put(user_id, new UserProfileImpl());
         getUser(user_id).user_id = user_id;
@@ -153,6 +173,7 @@ public class TasteProfileCache {
 		for (int i = 0; i<3; i++) setTopThreeSong(user_id, i, new SongCounterImpl());
     }
     
+    //creates a new instance of a songprofileimpl, and fills out the values,
     public static void makeSong(String song_id){
         songProfiles.put(song_id, new SongProfileImpl());
         getSong(song_id).top_three_users = new TopThreeUsersImpl();
@@ -160,30 +181,38 @@ public class TasteProfileCache {
 		for (int i = 0; i<3; i++) setTopThreeUser(song_id, i, new UserCounterImpl());
     }
 
+    
+    //basic get function
     public static UserProfile getUser(String user_id){
         return userProfiles.get(user_id);
     }
 
+    //basic get function
     public static SongProfile getSong(String song_id){
         return songProfiles.get(song_id);
     }
 
+    //basic get function
     public static void setTopThreeUser(String song_id, int position, UserCounter user){
         getSong(song_id).top_three_users.topThreeUsers[position] = user;
     }
 
+    //basic get function
     public static void setTopThreeSong(String user_id, int position, SongCounter song){
         getUser(user_id).top_three_songs.topThreeSongs[position] = song;
     }
 
+    //basic get function
     public static UserCounter getTopThreeUser(String song_id, int position){
         return getSong(song_id).top_three_users.topThreeUsers[position];
     }
 
+    //basic get function
     public static SongCounter getTopThreeSong(String user_id, int position){
         return getUser(user_id).top_three_songs.topThreeSongs[position];
     }
     
+    //inserts the cache maps into the map variables in the servant
     private static void putCache() {
     	TasteProfileServant.songProfiles = songProfiles;
     	TasteProfileServant.userProfiles = userProfiles;

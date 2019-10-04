@@ -11,11 +11,15 @@ import TasteProfile.TopThreeUsers;
 import TasteProfile.UserProfile;
 
 public class TasteProfileServant extends ProfilerPOA {
+	
+	//set up cache, will be filled by tasteProfileCache
 	public static HashMap<String,SongProfile> songProfiles = new HashMap<String,SongProfile>();
 	public static HashMap<String, UserProfile> userProfiles = new HashMap<String, UserProfile>();
 	
 	TasteProfileServantHelper helper = new TasteProfileServantHelper();
 
+	
+	//returns number of times a song has been played
 	@Override
 	public int getTimesPlayed(String song_id) {
 		delay();
@@ -26,6 +30,7 @@ public class TasteProfileServant extends ProfilerPOA {
 		}
 	}
 
+	//returns number of times song has been played by a specific user
 	@Override
 	public int getTimesPlayedByUser(String user_id, String song_id) {
 		delay();
@@ -41,6 +46,7 @@ public class TasteProfileServant extends ProfilerPOA {
 		return 0;
 	}
 
+	//returns an object of type topThreeUsers, containing the users who played a song the most
 	@Override
 	public TopThreeUsers getTopThreeUsersBySong(String song_id) {
 		delay();
@@ -51,6 +57,8 @@ public class TasteProfileServant extends ProfilerPOA {
 		}
 	}
 
+	
+	//you get the drift
 	@Override
 	public TopThreeSongs getTopThreeSongsByUser(String user_id) {
 		delay();
