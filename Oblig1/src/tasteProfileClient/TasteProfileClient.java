@@ -17,6 +17,7 @@ import TasteProfile.ProfilerHelper;
 
 public class TasteProfileClient {
 	static TasteProfileClientHelper helper = new TasteProfileClientHelper();
+	public static boolean userCaching;
 	public static Profiler servant;
 	public static PrintWriter writer;
 	static String inputFile = "input.txt";
@@ -33,6 +34,7 @@ public class TasteProfileClient {
 	
 	private static void setup(String[] args) {
 		establishConnection(args);
+		processArgs(args);
 		openFile(outputFile);
 	}
 	
@@ -49,6 +51,12 @@ public class TasteProfileClient {
 			System.out.println("ERROR : " + e) ;
 			e.printStackTrace(System.out);
 		}	
+	}
+
+	private static void processArgs(String[] args){
+		for(String arg : args){
+			if (arg.equals("-noMemory")) userCaching = false;
+		}
 	}
 	
 	private static void openFile(String filename) {

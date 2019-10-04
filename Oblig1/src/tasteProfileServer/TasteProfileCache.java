@@ -42,7 +42,6 @@ public class TasteProfileCache {
             try (Stream<String> stream = Files.lines(Paths.get(database))) {
                 stream.forEach((line) ->
                 {
-                    //firstPassLine(line.split("  "));
                     firstPassLine(line.split("\\s+"));
                 });
                 stream.close();
@@ -88,8 +87,7 @@ public class TasteProfileCache {
             try (Stream<String> stream = Files.lines(Paths.get(database))) {
                 stream.forEach((line) ->
                 {
-                    secondPassLine(line.split("	"));
-                    //songProfiles.get(rline.split("\\s+")[0]);
+                    secondPassLine(line.split("\\s+"));
                 });
                 stream.close();
             } catch (IOException e) {

@@ -10,6 +10,7 @@ import org.omg.PortableServer.POAHelper;
 import TasteProfile.*;
 
 public class TasteProfileServer {
+	private static boolean startupcache = true;
 
 	/**
 	 * @param args
@@ -17,6 +18,10 @@ public class TasteProfileServer {
 	 */
 	
 	public static void main(String[] args) {
+		for(String arg : args){
+			if (arg.equals("-noMemory")) startupcache = false;
+		}
+
 		try{
 			// create and initialize the ORB
 			ORB orb = ORB.init(args, null);
@@ -45,10 +50,12 @@ public class TasteProfileServer {
 			ncRef.rebind(path, href);
 			
 			//Cache on startup
-			long start = System.currentTimeMillis();
-			TasteProfileCache.startupCache();
-			long end = System.currentTimeMillis();
-			System.out.println("Caching took " + (end-start)/1000 + " seconds");
+			if(startupcache){
+				long start = System.currentTimeMillis();
+				TasteProfileCache.startupCache();
+				long end = System.currentTimeMillis();
+				System.out.println("Caching took " + (end-start)/1000 + " seconds");
+			}
 
 			// wait for invocations from clients
 			System.out.println("TasteProfileServer ready and waiting ...");

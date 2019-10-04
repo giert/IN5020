@@ -24,11 +24,14 @@ public class TasteProfileClientHelper {
     }
 
     private int getTimesPlayedByUserHelper(String user_id, String song_id){
-        if(user_id.equals(cachedProfile.user_id)){
-			for (SongCounter song : cachedProfile.songs) {
-				if(song.song_id.equals(song_id)) {
-					return song.songid_play_time;
-				}
+        if(TasteProfileClient.userCaching){
+            if(! user_id.equals(cachedProfile.user_id)){
+                cachedProfile = getUserProfile(user_id);
+            }
+            for (SongCounter song : cachedProfile.songs) {
+                if(song.song_id.equals(song_id)) {
+                    return song.songid_play_time;
+                }
 			}
         }else{
             return TasteProfileClient.servant.getTimesPlayedByUser(user_id, song_id);
@@ -51,11 +54,18 @@ public class TasteProfileClientHelper {
     }
 
     public TopThreeSongs getTopThreeSongsByUserHelper(String user_id){
-        if(user_id.equals(cachedProfile.user_id)){
+        if(TasteProfileClient.userCaching){
+            if(! user_id.equals(cachedProfile.user_id)){
+                cachedProfile = getUserProfile(user_id);
+            }
 			return cachedProfile.top_three_songs;
         }else{
             return TasteProfileClient.servant.getTopThreeSongsByUser(user_id);
         }
+    }
+
+    private UserProfile getUserProfile(String user_id){
+        return TasteProfileClient.servant.getUserProfile(user_id);
     }
 
 	private static void printOutput(String output) {
