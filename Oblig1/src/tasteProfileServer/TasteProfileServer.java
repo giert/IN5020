@@ -7,7 +7,8 @@ import org.omg.CosNaming.NamingContextExtHelper;
 import org.omg.PortableServer.POA;
 import org.omg.PortableServer.POAHelper;
 
-import TasteProfile.*;
+import TasteProfile.Profiler;
+import TasteProfile.ProfilerHelper;
 
 public class TasteProfileServer {
 	private static boolean startupcache = true;

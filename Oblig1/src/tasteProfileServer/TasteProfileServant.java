@@ -1,42 +1,28 @@
 package tasteProfileServer;
 
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Paths;
 import java.util.HashMap;
 import java.util.concurrent.TimeUnit;
-import java.util.stream.Stream;
 
 import TasteProfile.ProfilerPOA;
 import TasteProfile.SongCounter;
-import TasteProfile.SongCounterImpl;
 import TasteProfile.SongProfile;
 import TasteProfile.TopThreeSongs;
-import TasteProfile.TopThreeSongsImpl;
 import TasteProfile.TopThreeUsers;
-import TasteProfile.TopThreeUsersImpl;
-import TasteProfile.UserCounterImpl;
 import TasteProfile.UserProfile;
-import TasteProfile.UserProfileImpl;
 
 public class TasteProfileServant extends ProfilerPOA {
-	private static int result;
-	private static UserProfile userProfile;
-	private static TopThreeSongsImpl topSongs;
-	private static TopThreeUsersImpl topUsers;
-
-    public static String[] databases = {"train_triplets_1.txt", "train_triplets_2.txt"};
 	public static HashMap<String,SongProfile> songProfiles = new HashMap<String,SongProfile>();
 	public static HashMap<String, UserProfile> userProfiles = new HashMap<String, UserProfile>();
 	
+	TasteProfileServantHelper helper = new TasteProfileServantHelper();
+
 	@Override
 	public int getTimesPlayed(String song_id) {
 		delay();
 		if(songProfiles.containsKey(song_id)) {
 			return songProfiles.get(song_id).total_play_count;
 		}else{
-			getSongFromDB(song_id);
-			return result;
+			return helper.getSongPlaysFromDB(song_id);
 		}
 	}
 
@@ -50,8 +36,7 @@ public class TasteProfileServant extends ProfilerPOA {
 				}
 			}
 		}else{
-			getUserPlaysFromDB(song_id, user_id);
-			return result;
+			return helper.getUserPlaysFromDB(song_id, user_id);
 		}
 		return 0;
 	}
@@ -62,8 +47,7 @@ public class TasteProfileServant extends ProfilerPOA {
 		if(songProfiles.containsKey(song_id)) {
 			return songProfiles.get(song_id).top_three_users;
 		}else{
-			getTopThreeUsersFromDB(song_id);
-			return topUsers;
+			return helper.getTopThreeUsersFromDB(song_id);
 		}
 	}
 
@@ -73,8 +57,7 @@ public class TasteProfileServant extends ProfilerPOA {
 		if(userProfiles.containsKey(user_id)) {
 			return userProfiles.get(user_id).top_three_songs;
 		}else{
-			getTopThreeSongsFromDB(user_id);
-			return topSongs;
+			return helper.getTopThreeSongsFromDB(user_id);
 		}
 	}
 
@@ -84,145 +67,9 @@ public class TasteProfileServant extends ProfilerPOA {
 		if(userProfiles.containsKey(user_id)) {
 			return userProfiles.get(user_id);
 		}else{
-			getUserFromDB(user_id);
-			return userProfile;
+			return helper.getUserFromDB(user_id);
 		}
 	}
-
-	private static void getSongFromDB(String song_id){
-		result = 0;
-		for (String database : databases) {
-			try (Stream<String> stream = Files.lines(Paths.get(database))) {
-				stream.forEach((line) ->
-				{
-					String[] splitline = line.split("\\s");
-					if(splitline[0].equals(song_id)) result += Integer.parseInt(splitline[2]);
-				});
-			} catch (IOException e) {
-				System.out.println("ERROR : " + e) ;
-				e.printStackTrace(System.out);
-			}
-		}
-	}
-
-	private static void getUserFromDB(String user_id){
-		userProfile = new UserProfileImpl();
-        userProfile.user_id = user_id;
-        userProfile.songs = new SongCounterImpl[0];
-        userProfile.top_three_songs = new TopThreeSongsImpl();
-        userProfile.top_three_songs.topThreeSongs = new SongCounterImpl[3];
-		for (int i = 0; i<3; i++) userProfile.top_three_songs.topThreeSongs[i] = new SongCounterImpl();
-		
-		for (String database : databases) {
-			try (Stream<String> stream = Files.lines(Paths.get(database))) {
-				stream.forEach((line) ->
-				{
-					String[] splitline = line.split("\\s");
-					if(splitline[1].equals(user_id)){
-						int plays = Integer.parseInt(splitline[2]);
-						TasteProfileCache.addSongCounterUser(splitline[0], userProfile, plays);
-						getUserFromDBHelper(0, userProfile, splitline[0], plays );
-						userProfile.total_play_count += plays;
-					};
-				});
-			} catch (IOException e) {
-				System.out.println("ERROR : " + e) ;
-				e.printStackTrace(System.out);
-			}
-		}
-	}
-	private static void getUserFromDBHelper(int i, UserProfile user, String song_id, int plays){
-    	if(i >= 3) {
-    		return;
-    	} else if(plays > user.top_three_songs.topThreeSongs[i].songid_play_time){
-    		getUserFromDBHelper(i+1, user, user.top_three_songs.topThreeSongs[i].song_id, user.top_three_songs.topThreeSongs[i].songid_play_time);
-            user.top_three_songs.topThreeSongs[i].song_id = song_id;
-            user.top_three_songs.topThreeSongs[i].songid_play_time = plays;
-        } else {
-        	getUserFromDBHelper(i+1, user, song_id, plays);
-        }
-	}
-
-	private static void getUserPlaysFromDB(String song_id, String user_id){
-		result = 0;
-		for (String database : databases) {
-			try (Stream<String> stream = Files.lines(Paths.get(database))) {
-				stream.forEach((line) ->
-				{
-					String[] splitline = line.split("\\s");
-					if(splitline[0].equals(song_id) && splitline[1].equals(user_id))
-						result += Integer.parseInt(splitline[2]);
-				});
-			} catch (IOException e) {
-				System.out.println("ERROR : " + e) ;
-				e.printStackTrace(System.out);
-			}
-		}
-	}
-
-	private static void getTopThreeUsersFromDB(String song_id){
-		topUsers = new TopThreeUsersImpl();
-        topUsers.topThreeUsers = new UserCounterImpl[3];
-		for (int i = 0; i<3; i++) topUsers.topThreeUsers[i] = new UserCounterImpl();
-
-		for (String database : databases) {
-			try (Stream<String> stream = Files.lines(Paths.get(database))) {
-				stream.forEach((line) ->
-				{
-					String[] splitline = line.split("\\s");
-					if(splitline[0].equals(song_id))
-						getTopThreeUsersFromDBHelper(0, splitline[1], Integer.parseInt(splitline[2]));
-				});
-			} catch (IOException e) {
-				System.out.println("ERROR : " + e) ;
-				e.printStackTrace(System.out);
-			}
-		}
-	}
-
-    private static void getTopThreeUsersFromDBHelper(int i, String user_id, int plays){
-    	if(i >= 3) {
-    		return;
-    	} else if(plays > topUsers.topThreeUsers[i].songid_play_time){
-            getTopThreeUsersFromDBHelper(i+1, topUsers.topThreeUsers[i].user_id, topUsers.topThreeUsers[i].songid_play_time);
-            topUsers.topThreeUsers[i].user_id = user_id;
-            topUsers.topThreeUsers[i].songid_play_time = plays;
-        } else {
-            getTopThreeUsersFromDBHelper(i+1, user_id, plays);
-        }
-	}
-
-	private static void getTopThreeSongsFromDB(String user_id){
-		topSongs = new TopThreeSongsImpl();
-        topSongs.topThreeSongs = new SongCounterImpl[3];
-		for (int i = 0; i<3; i++) topSongs.topThreeSongs[i] = new SongCounterImpl();
-
-		for (String database : databases) {
-			try (Stream<String> stream = Files.lines(Paths.get(database))) {
-				stream.forEach((line) ->
-				{
-					String[] splitline = line.split("\\s");
-					if(splitline[1].equals(user_id))
-						getTopThreeSongsFromDBHelper(0, splitline[0], Integer.parseInt(splitline[2]));
-				});
-			} catch (IOException e) {
-				System.out.println("ERROR : " + e) ;
-				e.printStackTrace(System.out);
-			}
-		}
-	}
-
-    private static void getTopThreeSongsFromDBHelper(int i, String song_id, int plays){
-    	if(i >= 3) {
-    		return;
-    	} else if(plays > topSongs.topThreeSongs[i].songid_play_time){
-            getTopThreeSongsFromDBHelper(i+1, topSongs.topThreeSongs[i].song_id, topSongs.topThreeSongs[i].songid_play_time);
-            topSongs.topThreeSongs[i].song_id = song_id;
-            topSongs.topThreeSongs[i].songid_play_time = plays;
-        } else {
-            getTopThreeSongsFromDBHelper(i+1, song_id, plays);
-        }
-    }
 	
 	private static void delay() {
 		try {
