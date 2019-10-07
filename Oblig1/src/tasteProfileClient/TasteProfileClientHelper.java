@@ -11,6 +11,8 @@ public class TasteProfileClientHelper {
 		//a single user is cached, in case multiple calls on the same user is done.
     UserProfile cachedProfile = new UserProfileImpl() {};
 
+    //getTimesPlayed calls the remote call to get the number of times in total that a given song has been played,
+    //and times the response time.
     public void getTimesPlayed(String song_id){
         long start = System.currentTimeMillis();
         int response = TasteProfileClient.servant.getTimesPlayed(song_id);
@@ -18,6 +20,8 @@ public class TasteProfileClientHelper {
         printOutput(String.format("Song %s played %d times. (%d ms)", song_id, response, finish - start));
     }
 
+    //getTimesPlayedByUser calls the helper to get the number of times the specified user has played a given song,
+    //and times the response time.
     public void getTimesPlayedByUser(String user_id, String song_id){
         long start = System.currentTimeMillis();
         int response = getTimesPlayedByUserHelper(user_id, song_id);
@@ -25,7 +29,10 @@ public class TasteProfileClientHelper {
         printOutput(String.format("Song %s played %d times by user %s. (%d ms)", song_id, response, user_id, finish - start));
     }
 
-		//getTimesPlayedByUser checks if the user is cached
+    //getTimesPlayedByUser checks if the user is cached. If this is not the case, the user is cached for later use.
+    //It then returns the number of times the specified user has played a given song,
+    //and times the response time.
+    //If client-side chaching is disabled, it will instead attempt to do a remote call
     private int getTimesPlayedByUserHelper(String user_id, String song_id){
         if(TasteProfileClient.userCaching){
             if(! user_id.equals(cachedProfile.user_id)){
@@ -42,6 +49,8 @@ public class TasteProfileClientHelper {
         return 0;
     }
 
+    //getTopThreeUsersBySong calls the remote call to get the top three users that has played the given song
+    //the most times, and times the response time.
     public void getTopThreeUsersBySong(String song_id){
         long start = System.currentTimeMillis();
         TopThreeUsers response = TasteProfileClient.servant.getTopThreeUsersBySong(song_id);
@@ -49,6 +58,8 @@ public class TasteProfileClientHelper {
         printOutput(String.format("Song %s played most by users %s, %s and %s. (%d ms)", song_id, response.topThreeUsers[0].user_id, response.topThreeUsers[1].user_id, response.topThreeUsers[2].user_id, finish - start));
     }
 
+    //getTopThreeSongsByUser calls the remote call to get the top three songs that the given user
+    //has played the most times, and times the response time.
     public void getTopThreeSongsByUser(String user_id){
         long start = System.currentTimeMillis();
         TopThreeSongs response = getTopThreeSongsByUserHelper(user_id);
@@ -57,7 +68,11 @@ public class TasteProfileClientHelper {
     }
 
 
-		//getTopThreeSongsByUserHelper checks if user is cached
+
+    //getTopThreeSongsByUserHelper checks if the user is cached. If this is not the case, the user is cached for later use.
+    //It then returns the number of times the top three songs for the specified user,
+    //and times the response time.
+    //If client-side chaching is disabled, it will instead attempt to do a remote call
     private TopThreeSongs getTopThreeSongsByUserHelper(String user_id){
         if(TasteProfileClient.userCaching){
             if(! user_id.equals(cachedProfile.user_id)){
@@ -69,10 +84,12 @@ public class TasteProfileClientHelper {
         }
     }
 
+    //getUserProfile does a remote call to get a complete UserPRofile object from the server
     private UserProfile getUserProfile(String user_id){
         return TasteProfileClient.servant.getUserProfile(user_id);
     }
 
+    //printOutput prints the given string to both the terminal and to a text file
 	private static void printOutput(String output) {
 		System.out.println(output);
 		TasteProfileClient.writer.println(output);

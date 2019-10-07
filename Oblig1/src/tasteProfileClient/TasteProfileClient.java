@@ -39,7 +39,7 @@ public class TasteProfileClient {
 		openFile(outputFile);
 	}
 
-	//handles connecting to ORB
+	//establishConnection handles connecting to ORB
 	private static void establishConnection(String[] args) {
 		try{
 			ORB orb = ORB.init(args, null);
@@ -55,7 +55,7 @@ public class TasteProfileClient {
 		}
 	}
 
-	//enable/disable cache
+	//processArgs searches through the args to look for the arg to disable cache. If it is not found, cache is left on.
 	private static void processArgs(String[] args){
 		for(String arg : args){
 			if (arg.equals("-noMemory")) userCaching = false;
@@ -71,7 +71,7 @@ public class TasteProfileClient {
 		}
 	}
 
-	//main program. runs every command from the input file, and times each call
+	//process is the main loop of the client. Reads every line from the input.txt and delivers each line to RemoteCall
 	private static void process() {
 		long start = System.currentTimeMillis();
 		try (Stream<String> stream = Files.lines(Paths.get(inputFile))) {
@@ -87,7 +87,8 @@ public class TasteProfileClient {
 		System.out.println("Processing input took " + (end-start)/60000 + " minutes");
 	}
 
-	//decide what call to do
+	//remoteCall takes an array of parameters and calls the specified method.
+	//If no matching method is found, it will print "no match" to terminal and then return.
 	private static void remoteCall(String[] params) {
 		switch (params[0])
 		{
@@ -108,6 +109,7 @@ public class TasteProfileClient {
 		}
 	}
 
+	//Cleanup frees resources
 	private static void cleanup() {
 		writer.close();
 	}

@@ -58,7 +58,6 @@ public class TasteProfileServant extends ProfilerPOA {
 	}
 
 	
-	//you get the drift
 	@Override
 	public TopThreeSongs getTopThreeSongsByUser(String user_id) {
 		delay();

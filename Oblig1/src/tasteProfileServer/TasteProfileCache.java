@@ -26,6 +26,7 @@ public class TasteProfileCache {
 	public static HashMap<String,Integer> userPopularity = new HashMap<String, Integer>();
 	public static HashMap<String, UserProfile> userProfiles = new HashMap<String, UserProfile>();
 
+    //startupCache organizes and calls the neccesary methods to perform the cahcing, it also reports on the progress.
 	public static void startupCache(){
 		System.out.println("Starting first pass...");
         firstPass();
@@ -37,7 +38,7 @@ public class TasteProfileCache {
 		putCache();
     }
 	
-	//runs the first pass through the database
+	//firstPass runs the first pass through the databases
     private static void firstPass(){
         for(String database : databases){
         	//reads every line of the file with file streamer
@@ -53,7 +54,8 @@ public class TasteProfileCache {
             }
         }
     }
-	
+    
+    //firstPassLine is a helper that is called on every line in the databases to make song profiles and get all users
 	private static void firstPassLine(String[] params) {
         String song_id = params[0];
         int plays = Integer.parseInt(params[2]);
@@ -70,7 +72,7 @@ public class TasteProfileCache {
         shuffleTopUsers(0, song_id, params[1], plays);
     }
 
-	//finds the top 1000 users
+	//sortUsers finds the top 1000 users
 	private static void sortUsers(){
 		//make an array of the popularity map and sort in reverse order
 		Integer[] values = userPopularity.values().toArray(new Integer[0]);
@@ -92,8 +94,7 @@ public class TasteProfileCache {
 		}
     }
 
-	
-	//the second pass fills in the top three songs info for the top 1000 users
+	//the second pass fills in the songs list and the top three songs for the top 1000 users
     private static void secondPass(){
         for(String database : databases){
             try (Stream<String> stream = Files.lines(Paths.get(database))) {
@@ -109,6 +110,9 @@ public class TasteProfileCache {
         } 
     }
 
+    //secondPassLine is a helper for the second pass that is called on each line. If the given user is one of top 1000, it will
+    //add each song to its array of song plays, and checks the song against each user's top three songs,
+    //to see if this song has more views
 	private static void secondPassLine(String[] params){
 		if(userProfiles.containsKey(params[1])){
             addSongCounter(params[0], params[1], Integer.parseInt(params[2]));
@@ -116,7 +120,7 @@ public class TasteProfileCache {
         }
     }
     
-	//adds current song to the array of songs a user has played.
+	//addSongCounter adds current song to the array of songs a user has played.
     private static void addSongCounter(String song_id, String user_id, int plays){
         int length = getUser(user_id).songs.length;
         getUser(user_id).songs = Arrays.copyOf(getUser(user_id).songs, length + 1);
@@ -134,7 +138,7 @@ public class TasteProfileCache {
         user.songs[length].songid_play_time = plays;
     }
 
-    //sorts the top users of a given song
+    //shuffleTopUsers sorts the top users of a given song
     //is implemented recursively for compactness
     private static void shuffleTopUsers(int i, String song_id, String user_id, int plays){
     	if(i >= 3) {
@@ -148,7 +152,7 @@ public class TasteProfileCache {
         }
     }
 
-    //sorts the top songs of a given user
+    //shuffleTopSongs sorts the top songs of a given user
     //is implemented recursively for compactness
     private static void shuffleTopSongs(int i, String song_id, String user_id, int plays){
     	if(i >= 3) {
@@ -162,7 +166,7 @@ public class TasteProfileCache {
         }
     }
     
-    //creates a new instance of a userprofileimpl, and fills out the values,
+    //makeUser creates a new instance of a userprofileimpl, and  initilizes all all the values,
     //this could have been done in a constructor, but fits just as well here
     public static void makeUser(String user_id){
         userProfiles.put(user_id, new UserProfileImpl());
@@ -173,7 +177,7 @@ public class TasteProfileCache {
 		for (int i = 0; i<3; i++) setTopThreeSong(user_id, i, new SongCounterImpl());
     }
     
-    //creates a new instance of a songprofileimpl, and fills out the values,
+    //makeSong creates a new instance of a songprofileimpl, and initilizes all the values,
     public static void makeSong(String song_id){
         songProfiles.put(song_id, new SongProfileImpl());
         getSong(song_id).top_three_users = new TopThreeUsersImpl();
