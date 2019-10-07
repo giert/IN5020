@@ -3,6 +3,7 @@ package tasteProfileClient;
 import TasteProfile.SongCounter;
 import TasteProfile.TopThreeSongs;
 import TasteProfile.TopThreeUsers;
+import TasteProfile.UserCounter;
 import TasteProfile.UserProfile;
 import TasteProfile.UserProfileImpl;
 
@@ -53,9 +54,12 @@ public class TasteProfileClientHelper {
     //the most times, and times the response time.
     public void getTopThreeUsersBySong(String song_id){
         long start = System.currentTimeMillis();
-        TopThreeUsers response = TasteProfileClient.servant.getTopThreeUsersBySong(song_id);
+        TopThreeUsers response = TasteProfileClient.servant.getTopThreeUsersBySong(song_id); //Song ID was played INT times. User ID played INT times.
         long finish = System.currentTimeMillis();
-        printOutput(String.format("Song %s played most by users %s, %s and %s. (%d ms)", song_id, response.topThreeUsers[0].user_id, response.topThreeUsers[1].user_id, response.topThreeUsers[2].user_id, finish - start));
+        for(UserCounter user : response.topThreeUsers){
+            printOutput(String.format("User %s played %d times.", user.user_id, user.songid_play_time));
+        }
+        printOutput(String.format("(%d ms)", finish - start));
     }
 
     //getTopThreeSongsByUser calls the remote call to get the top three songs that the given user
@@ -64,11 +68,12 @@ public class TasteProfileClientHelper {
         long start = System.currentTimeMillis();
         TopThreeSongs response = getTopThreeSongsByUserHelper(user_id);
         long finish = System.currentTimeMillis();
-        printOutput(String.format("User %s has songs %s, %s and %s as top songs. (%d ms)", user_id, response.topThreeSongs[0].song_id, response.topThreeSongs[1].song_id, response.topThreeSongs[2].song_id, finish - start));
+        for(SongCounter song : response.topThreeSongs){
+            printOutput(String.format("Song %s was played %d times.", song.song_id, song.songid_play_time));
+        }
+        printOutput(String.format("(%d ms)", finish - start));
     }
-
-
-
+    
     //getTopThreeSongsByUserHelper checks if the user is cached. If this is not the case, the user is cached for later use.
     //It then returns the number of times the top three songs for the specified user,
     //and times the response time.
