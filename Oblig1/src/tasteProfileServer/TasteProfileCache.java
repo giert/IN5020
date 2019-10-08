@@ -69,7 +69,7 @@ public class TasteProfileCache {
 		userPopularity.put(params[1], userPopularity.get(params[1]) + plays );
         
 		//check if the user in the current line is one of the top three users for the current song
-        shuffleTopUsers(0, song_id, params[1], plays);
+        shuffleTopUsers(song_id, params[1], plays);
     }
 
 	//sortUsers finds the top 1000 users
@@ -116,7 +116,7 @@ public class TasteProfileCache {
 	private static void secondPassLine(String[] params){
 		if(userProfiles.containsKey(params[1])){
             addSongCounter(params[0], params[1], Integer.parseInt(params[2]));
-            shuffleTopSongs(0, params[0], params[1], Integer.parseInt(params[2]));
+            shuffleTopSongs(params[0], params[1], Integer.parseInt(params[2]));
         }
     }
     
@@ -140,29 +140,35 @@ public class TasteProfileCache {
 
     //shuffleTopUsers sorts the top users of a given song
     //is implemented recursively for compactness
+    private static void shuffleTopUsers(String song_id, String user_id, int plays){
+        shuffleTopUsers(2, song_id, user_id, plays);
+    }
     private static void shuffleTopUsers(int i, String song_id, String user_id, int plays){
-    	if(i >= 3) {
+    	if(i < 0) {
     		return;
     	} else if(plays > getTopThreeUser(song_id, i).songid_play_time) {
-            shuffleTopUsers(i+1, song_id, getTopThreeUser(song_id, i).user_id, getTopThreeUser(song_id, i).songid_play_time);
+            shuffleTopUsers(i-1, song_id, getTopThreeUser(song_id, i).user_id, getTopThreeUser(song_id, i).songid_play_time);
             getTopThreeUser(song_id, i).user_id = user_id;
             getTopThreeUser(song_id, i).songid_play_time = plays;
         } else {
-            shuffleTopUsers(i+1, song_id, user_id, plays);
+            shuffleTopUsers(i-1, song_id, user_id, plays);
         }
     }
 
     //shuffleTopSongs sorts the top songs of a given user
     //is implemented recursively for compactness
+    private static void shuffleTopSongs(String song_id, String user_id, int plays){
+        shuffleTopSongs(2, song_id, user_id, plays);
+    }
     private static void shuffleTopSongs(int i, String song_id, String user_id, int plays){
-    	if(i >= 3) {
+    	if(i < 0) {
     		return;
     	} else if(plays > getTopThreeSong(user_id, i).songid_play_time){
-            shuffleTopSongs(i+1, getTopThreeSong(user_id, i).song_id, user_id, getTopThreeSong(user_id, i).songid_play_time);
+            shuffleTopSongs(i-1, getTopThreeSong(user_id, i).song_id, user_id, getTopThreeSong(user_id, i).songid_play_time);
             getTopThreeSong(user_id, i).song_id = song_id;
             getTopThreeSong(user_id, i).songid_play_time = plays;
         } else {
-            shuffleTopSongs(i+1, song_id, user_id, plays);
+            shuffleTopSongs(i-1, song_id, user_id, plays);
         }
     }
     

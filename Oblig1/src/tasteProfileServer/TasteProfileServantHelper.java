@@ -108,7 +108,7 @@ public class TasteProfileServantHelper {
 				{
 					String[] splitline = line.split("\\s");
 					if(splitline[0].equals(song_id))
-						getTopThreeUsersFromDBHelper(0, splitline[1], Integer.parseInt(splitline[2]));
+						getTopThreeUsersFromDBHelper(splitline[1], Integer.parseInt(splitline[2]));
 				});
 			} catch (IOException e) {
 				System.out.println("ERROR : " + e) ;
@@ -118,15 +118,18 @@ public class TasteProfileServantHelper {
         return topUsers;
 	}
 
-    private void getTopThreeUsersFromDBHelper(int i, String user_id, int plays){
-    	if(i >= 3) {
+    private void getTopThreeUsersFromDBHelper(String user_id, int plays){
+		getTopThreeUsersFromDBHelper(2, user_id, plays);
+	}
+	private void getTopThreeUsersFromDBHelper(int i, String user_id, int plays){
+    	if(i < 0) {
     		return;
     	} else if(plays > topUsers.topThreeUsers[i].songid_play_time){
-            getTopThreeUsersFromDBHelper(i+1, topUsers.topThreeUsers[i].user_id, topUsers.topThreeUsers[i].songid_play_time);
+            getTopThreeUsersFromDBHelper(i-1, topUsers.topThreeUsers[i].user_id, topUsers.topThreeUsers[i].songid_play_time);
             topUsers.topThreeUsers[i].user_id = user_id;
             topUsers.topThreeUsers[i].songid_play_time = plays;
         } else {
-            getTopThreeUsersFromDBHelper(i+1, user_id, plays);
+            getTopThreeUsersFromDBHelper(i-1, user_id, plays);
         }
 	}
 
@@ -141,25 +144,29 @@ public class TasteProfileServantHelper {
 				{
 					String[] splitline = line.split("\\s");
 					if(splitline[1].equals(user_id))
-						getTopThreeSongsFromDBHelper(0, splitline[0], Integer.parseInt(splitline[2]));
+						getTopThreeSongsFromDBHelper(splitline[0], Integer.parseInt(splitline[2]));
 				});
 			} catch (IOException e) {
-				System.out.println("ERROR : " + e) ;
+				System.out.println("ERROR : " + e);
 				e.printStackTrace(System.out);
 			}
         }
         return topSongs;
 	}
 
+	private void getTopThreeSongsFromDBHelper(String song_id, int plays){
+		getTopThreeSongsFromDBHelper(2, song_id, plays);
+	}
+
     private void getTopThreeSongsFromDBHelper(int i, String song_id, int plays){
-    	if(i >= 3) {
+    	if(i < 0) {
     		return;
     	} else if(plays > topSongs.topThreeSongs[i].songid_play_time){
-            getTopThreeSongsFromDBHelper(i+1, topSongs.topThreeSongs[i].song_id, topSongs.topThreeSongs[i].songid_play_time);
+            getTopThreeSongsFromDBHelper(i-1, topSongs.topThreeSongs[i].song_id, topSongs.topThreeSongs[i].songid_play_time);
             topSongs.topThreeSongs[i].song_id = song_id;
             topSongs.topThreeSongs[i].songid_play_time = plays;
         } else {
-            getTopThreeSongsFromDBHelper(i+1, song_id, plays);
+            getTopThreeSongsFromDBHelper(i-1, song_id, plays);
         }
     }
 }
