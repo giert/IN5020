@@ -68,8 +68,8 @@ public class TasteProfileClientHelper {
         long start = System.currentTimeMillis();
         TopThreeSongs response = getTopThreeSongsByUserHelper(user_id);
         long finish = System.currentTimeMillis();
-        for(SongCounter song : response.topThreeSongs){
-            printOutput(String.format("Song %s was played %d times.", song.song_id, song.songid_play_time));
+        for(int i = 2; i >= 0; i--){
+            printOutput(String.format("Song %s was played %d times.", response.topThreeSongs[i].song_id,  response.topThreeSongs[i].songid_play_time));
         }
         printOutput(String.format("(%d ms)", finish - start));
     }
